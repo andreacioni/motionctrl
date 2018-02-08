@@ -1,0 +1,5 @@
+package motion
+
+func ReadConfig() {
+
+}
