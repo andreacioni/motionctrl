@@ -4,6 +4,8 @@ import (
 	"os/exec"
 	"sync"
 
+	"../config"
+	"../version"
 	"github.com/kpango/glg"
 )
 
@@ -12,7 +14,15 @@ var (
 	started bool
 )
 
-//CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit
+func Init() {
+	if config.Conf.MotionConfig != "" {
+		glg.Infof("Motion config file specified", config.Conf.MotionConfig)
+	} else {
+		glg.Fatalf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
+	}
+}
+
+//CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error
 func CheckInstall() {
 	err := exec.Command("motion", "-h").Run()
 

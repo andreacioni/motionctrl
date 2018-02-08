@@ -1,5 +1,5 @@
 package motion
 
-func ReadConfig() {
+func ReadConfig(configFile string) {
 
 }

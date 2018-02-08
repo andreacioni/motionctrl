@@ -11,10 +11,11 @@ type Authentication struct {
 }
 
 type Configuration struct {
-	Address  string `json:"address"`
-	Port     string `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Address      string `json:"address"`
+	Port         string `json:"port"`
+	MotionConfig string `json:"motion_config"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
 }
 
 var Conf Configuration

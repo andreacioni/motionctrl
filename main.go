@@ -26,7 +26,7 @@ func main() {
 
 	config.Load(configFile)
 
-	motion.CheckInstall()
+	motion.Init()
 
 	api.Init()
 }

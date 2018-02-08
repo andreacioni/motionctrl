@@ -1,7 +1,7 @@
 {
     "address" : "127.0.0.1",
-
-    "configFile" : "",
+    "port" : 8888,
+    "motionConfig" : "/etc/motion",
 
     "username" : "user",
     "password" : "pass",
