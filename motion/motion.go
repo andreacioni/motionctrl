@@ -21,7 +21,13 @@ func Init() {
 		glg.Fatalf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
 	}
 
-	//err := ReadConfig(config.Get().MotionConfigFile)
+	glg.Infof("Loading motion configuration from %s...", config.Get().MotionConfigFile)
+
+	err := Load(config.Get().MotionConfigFile)
+
+	if err != nil {
+		glg.Fatal(err)
+	}
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error

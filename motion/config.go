@@ -2,39 +2,55 @@ package motion
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
-	"regexp"
 	"strings"
-
-	"github.com/kpango/glg"
 )
 
 const (
-	pat = "[^;#][[:word:]]+[[:blank:]]+[[:word:]]+"
+	WEB_CONTROLLER_PORT = "webcontrol_port"
+	STREAM_PORT         = "stream_port"
 )
 
 var (
-	re            *regexp.Regexp
 	motionConfMap map[string]string
 )
 
-func init() {
-	re = regexp.MustCompile(pat)
+func Load(filename string) error {
+
+	temp, err := Parse(filename)
+
+	if err == nil {
+		err = Check(temp)
+	}
+
+	return err
 }
 
-func Load(filename string) {
-	glg.Infof("Loading motion configuration from %s...", filename)
+func Check(configMap map[string]string) error {
+	var err error
+	webControlPort := configMap[WEB_CONTROLLER_PORT]
 
-	motionConfMap = Parse(filename)
+	if webControlPort == "" {
+		err = fmt.Errorf("missing %s", WEB_CONTROLLER_PORT)
+	}
+
+	streamPort := configMap[STREAM_PORT]
+
+	if streamPort == "" {
+		err = fmt.Errorf("missing %s", STREAM_PORT)
+	}
+
+	return err
 }
 
-func Parse(configFile string) map[string]string {
+//TODO improve with regexp
+func Parse(configFile string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	file, err := os.Open(configFile)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer file.Close()
 
@@ -51,11 +67,7 @@ func Parse(configFile string) map[string]string {
 
 	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return result
+	return result, nil
 }
 
 func Get(key string) string {
