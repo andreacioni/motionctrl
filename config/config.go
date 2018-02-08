@@ -11,14 +11,14 @@ type Authentication struct {
 }
 
 type Configuration struct {
-	Address      string `json:"address"`
-	Port         string `json:"port"`
-	MotionConfig string `json:"motion_config"`
-	Username     string `json:"username"`
-	Password     string `json:"password"`
+	Address          string `json:"address"`
+	Port             int    `json:"port"`
+	MotionConfigFile string `json:"motionConfigFile"`
+	Username         string `json:"username"`
+	Password         string `json:"password"`
 }
 
-var Conf Configuration
+var conf Configuration
 
 // Load function convert a loaded JSON config file to a config struct
 // return err if secret param is empty
@@ -29,12 +29,16 @@ func Load(filename string) error {
 		glg.Fatal(err)
 	}
 
-	err = json.Unmarshal(raw, &Conf)
+	err = json.Unmarshal(raw, &conf)
 	if err != nil {
 		glg.Fatal(err)
 	}
 
-	glg.Debugf("Current config: %+v", Conf)
+	glg.Debugf("Current config: %+v", conf)
 
 	return nil
+}
+
+func Get() Configuration {
+	return conf
 }

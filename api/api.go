@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -15,30 +16,27 @@ func Init() {
 	var group *gin.RouterGroup
 	r := gin.Default()
 
-	if config.Conf.Username != "" && config.Conf.Password != "" {
-		glg.Info("Username and password defined, authentication is enabled")
-		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Conf.Username: config.Conf.Password}))
+	if config.Get().Username != "" && config.Get().Password != "" {
+		glg.Info("Username and password defined, authentication enabled")
+		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
 	} else {
-		glg.Warn("Username and password not defined, authentication is disabled")
+		glg.Warn("Username and password not defined, authentication disabled")
 		group = r.Group("/")
 	}
 
 	group.GET("/startup", startHandler)
 	group.GET("/shutdown", stopHandler)
 
-	// Listen and serve on 0.0.0.0:8080
-	r.Run(":8080")
+	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
 }
 
 func startHandler(c *gin.Context) {
-	motionDetection := c.Query("startup_motion_detection")
-	
-	if motionDetection == "true" || motionDetection == "false") {
-		motionDetection  := strconv.FormatBool(motionDetection)
-	} else {
+	motionDetection, err := strconv.ParseBool(c.Query("detection"))
+
+	if err != nil {
 		motionDetection = false
 	}
-	
+
 	motion.Startup(motionDetection)
 }
 
