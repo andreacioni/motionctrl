@@ -42,7 +42,7 @@ func CheckInstall() error {
 	err := exec.Command("motion", "-h").Run()
 
 	//TODO unfortunatelly motion doesn't return 0 when invoked with the "-h" parameter
-	if err != nil || err.Error() != "exit status 1" {
+	if err != nil && err.Error() != "exit status 1" {
 		return err
 	}
 

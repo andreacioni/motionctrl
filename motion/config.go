@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	WEB_CONTROLLER_PORT = "webcontrol_port"
-	STREAM_PORT         = "stream_port"
+	WebControlPort = "webcontrol_port"
+	StreamPort     = "stream_port"
 )
 
 var (
@@ -29,16 +29,16 @@ func Load(filename string) error {
 
 func Check(configMap map[string]string) error {
 	var err error
-	webControlPort := configMap[WEB_CONTROLLER_PORT]
+	webControlPort := configMap[WebControlPort]
 
 	if webControlPort == "" {
-		err = fmt.Errorf("missing %s", WEB_CONTROLLER_PORT)
+		err = fmt.Errorf("missing %s", WebControlPort)
 	}
 
-	streamPort := configMap[STREAM_PORT]
+	streamPort := configMap[StreamPort]
 
 	if streamPort == "" {
-		err = fmt.Errorf("missing %s", STREAM_PORT)
+		err = fmt.Errorf("missing %s", StreamPort)
 	}
 
 	return err
