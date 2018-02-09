@@ -26,6 +26,9 @@ func Init() {
 
 	group.GET("/startup", startHandler)
 	group.GET("/shutdown", stopHandler)
+	group.GET("/detection/status", isMotionDetectionEnabled)
+	group.GET("/detection/start", startMotionDetection)
+	group.GET("/detection/pause", pauseMotionDetection)
 
 	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
 }
@@ -62,6 +65,26 @@ func isMotionDetectionEnabled(c *gin.Context) {
 	if err != nil {
 		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion stopped"})
+		c.JSON(200, gin.H{"motionDetectionEnabled": enabled})
+	}
+}
+
+func startMotionDetection(c *gin.Context) {
+	err := motion.EnableMotionDetection(true)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion detection started"})
+	}
+}
+
+func pauseMotionDetection(c *gin.Context) {
+	err := motion.EnableMotionDetection(false)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion detection paused"})
 	}
 }
