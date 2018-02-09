@@ -7,6 +7,10 @@ import (
 	"github.com/kpango/glg"
 )
 
+const (
+	BaseAddress = "127.0.0.1"
+)
+
 type Authentication struct {
 }
 

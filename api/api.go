@@ -55,3 +55,13 @@ func stopHandler(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "motion stopped"})
 	}
 }
+
+func isMotionDetectionEnabled(c *gin.Context) {
+	enabled, err := motion.IsMotionDetectionEnabled()
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion stopped"})
+	}
+}
