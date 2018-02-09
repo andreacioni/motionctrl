@@ -26,7 +26,7 @@ func main() {
 
 	config.Load(configFile)
 
-	motion.Init()
+	motion.Init(config.Get().MotionConfigFile)
 
 	api.Init()
 }

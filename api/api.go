@@ -37,12 +37,21 @@ func startHandler(c *gin.Context) {
 		motionDetection = false
 	}
 
-	motion.Startup(motionDetection)
+	err = motion.Startup(motionDetection)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion started"})
+	}
 }
 
 func stopHandler(c *gin.Context) {
+	err := motion.Shutdown()
 
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion stopped"})
+	}
 }

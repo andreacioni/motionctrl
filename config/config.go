@@ -22,7 +22,7 @@ var conf Configuration
 
 // Load function convert a loaded JSON config file to a config struct
 // return err if secret param is empty
-func Load(filename string) error {
+func Load(filename string) {
 	glg.Infof("Loading configuration from %s ...", filename)
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -35,8 +35,6 @@ func Load(filename string) error {
 	}
 
 	glg.Debugf("Current config: %+v", conf)
-
-	return nil
 }
 
 func Get() Configuration {

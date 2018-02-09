@@ -50,7 +50,11 @@ func TestStartStop(t *testing.T) {
 		t.Error(err)
 	}
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 3)
+
+	if !IsStarted() {
+		t.Error("not started")
+	}
 
 	err = Shutdown()
 

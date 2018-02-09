@@ -47,6 +47,11 @@ func Init(configFile string) {
 		glg.Fatalf("Failed to load motion configuration file (%s)", err)
 	}
 
+	_, err = readPid()
+	if err == nil {
+		glg.Fatalf("Motion is started before %s. Kill motion and retry", version.Name)
+	}
+
 	motionConfigFile = configFile
 }
 
@@ -66,17 +71,20 @@ func CheckInstall() error {
 func Startup(motionDetectionStartup bool) error {
 	mu.Lock()
 	defer mu.Unlock()
+	if !started {
+		var err error
 
-	var err error
+		if motionDetectionStartup {
+			err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
+		} else {
+			err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
+		}
 
-	if motionDetectionStartup {
-		err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
+		if err != nil {
+			return err
+		}
 	} else {
-		err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
-	}
-
-	if err != nil {
-		return err
+		glg.Warn("motion is already started")
 	}
 
 	started = true
@@ -87,6 +95,7 @@ func Startup(motionDetectionStartup bool) error {
 func Shutdown() error {
 	mu.Lock()
 	defer mu.Unlock()
+
 	if started {
 
 		pid, err := readPid()
@@ -101,6 +110,8 @@ func Shutdown() error {
 			return fmt.Errorf("cannot read pid of motion process: %s", err)
 		}
 
+	} else {
+		glg.Warn("motion is already stopped")
 	}
 
 	started = false
