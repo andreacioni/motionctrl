@@ -30,6 +30,10 @@ func Load(filename string) error {
 
 	if err == nil {
 		err = Check(temp)
+
+		if err == nil {
+			motionConfMap = temp
+		}
 	}
 
 	return err
@@ -51,7 +55,7 @@ func Check(configMap map[string]string) error {
 	webControlHTML := configMap[WebControlHTML]
 
 	if webControlHTML == "" || webControlHTML == "on" {
-		return fmt.Errorf("'%s' parameter not found", WebControlHTML)
+		return fmt.Errorf("'%s' parameter not found or set to 'on' (must be 'off')", WebControlHTML)
 	}
 
 	webControlParms := configMap[WebControlParms]

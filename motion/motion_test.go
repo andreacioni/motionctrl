@@ -41,6 +41,9 @@ func TestCheckInstall(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
+
+	Init("./motion_test.conf")
+
 	err := Startup(false)
 
 	if err != nil {

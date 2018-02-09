@@ -2,21 +2,23 @@ package motion
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 
-	"../config"
 	"../version"
 	"github.com/kpango/glg"
 )
 
 var (
-	mu      sync.Mutex
-	started bool
+	mu               sync.Mutex
+	started          bool
+	motionConfigFile string
 )
 
-func Init() {
+func Init(configFile string) {
 
 	err := CheckInstall()
 
@@ -24,25 +26,28 @@ func Init() {
 		glg.Fatalf("Motion not found (%s)", err)
 	}
 
-	if config.Get().MotionConfigFile != "" {
-		_, err = os.Stat(config.Get().MotionConfigFile)
+	if configFile != "" {
+		_, err = os.Stat(configFile)
 		if err != nil {
-			glg.Info("Motion config file specified", config.Get().MotionConfigFile)
+			glg.Fatalf("Cannot open file %s", configFile)
 		} else {
-			glg.Fatalf("Cannot open file %s", config.Get().MotionConfigFile)
+
+			glg.Infof("Motion config file specified: %s", configFile)
 		}
 
 	} else {
 		glg.Fatalf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
 	}
 
-	glg.Infof("Loading motion configuration from %s...", config.Get().MotionConfigFile)
+	glg.Infof("Loading motion configuration from %s...", configFile)
 
-	err = Load(config.Get().MotionConfigFile)
+	err = Load(configFile)
 
 	if err != nil {
 		glg.Fatalf("Failed to load motion configuration file (%s)", err)
 	}
+
+	motionConfigFile = configFile
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error
@@ -65,9 +70,9 @@ func Startup(motionDetectionStartup bool) error {
 	var err error
 
 	if motionDetectionStartup {
-		err = exec.Command("motion", "-b", "-c", config.Get().MotionConfigFile).Run()
+		err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
 	} else {
-		err = exec.Command("motion", "-b", "-m", "-c", config.Get().MotionConfigFile).Run()
+		err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
 	}
 
 	if err != nil {
@@ -82,12 +87,20 @@ func Startup(motionDetectionStartup bool) error {
 func Shutdown() error {
 	mu.Lock()
 	defer mu.Unlock()
-
 	if started {
-		err := exec.Command("kill", "-2", fmt.Sprintf("$(cat %s)", motionConfMap[ProcessIdFile]), config.Get().MotionConfigFile).Run()
-		if err != nil {
-			return err
+
+		pid, err := readPid()
+
+		if err == nil {
+			glg.Debugf("Going to kill motion (PID: %d)", pid)
+			err := exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
+			if err != nil {
+				return fmt.Errorf("failed to kill motion instance: %s", err)
+			}
+		} else {
+			return fmt.Errorf("cannot read pid of motion process: %s", err)
 		}
+
 	}
 
 	started = false
@@ -99,4 +112,20 @@ func IsStarted() bool {
 	mu.Lock()
 	defer mu.Unlock()
 	return started
+}
+
+func readPid() (int, error) {
+	raw, err := ioutil.ReadFile(motionConfMap[ProcessIdFile])
+
+	if err != nil {
+		return 0, err
+	}
+
+	pid, err := strconv.Atoi(string(raw[:len(raw)-1]))
+
+	if err != nil {
+		return 0, err
+	}
+
+	return pid, err
 }
