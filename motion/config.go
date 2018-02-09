@@ -45,13 +45,13 @@ func Check(configMap map[string]string) error {
 	streamPort := configMap[StreamPort]
 
 	if streamPort == "" {
-		return fmt.Errorf("missing %s", StreamPort)
+		return fmt.Errorf("'%s' parameter not found", StreamPort)
 	}
 
 	webControlHTML := configMap[WebControlHTML]
 
 	if webControlHTML == "" || webControlHTML == "on" {
-		return fmt.Errorf("%s must be disabled", WebControlHTML)
+		return fmt.Errorf("'%s' parameter not found", WebControlHTML)
 	}
 
 	webControlParms := configMap[WebControlParms]
@@ -76,6 +76,12 @@ func Check(configMap map[string]string) error {
 
 	if streamAuth != "" {
 		return fmt.Errorf("'%s' parameter need to be commented in motion config", StreamAuthentication)
+	}
+
+	pidFile := configMap[ProcessIdFile]
+
+	if pidFile == "" {
+		return fmt.Errorf("'%s' parameter not found", StreamAuthentication)
 	}
 
 	return nil
