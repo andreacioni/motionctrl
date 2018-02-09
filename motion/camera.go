@@ -4,9 +4,14 @@ import (
 	"fmt"
 
 	"../config"
+	"../utils"
 
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
+)
+
+const (
+	DETECTION_STATUS_REGEX = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
 )
 
 func IsMotionDetectionEnabled() (bool, error) {
@@ -16,6 +21,14 @@ func IsMotionDetectionEnabled() (bool, error) {
 
 	if errs == nil {
 		if resp.StatusCode == 200 {
+
+			if utils.RegexFirstSubmatchString(DETECTION_STATUS_REGEX, body) == "ACTIVE" {
+
+			} else if utils.RegexFirstSubmatchString(DETECTION_STATUS_REGEX, body) == "PAUSE" {
+
+			} else {
+
+			}
 
 		} else {
 			return false, fmt.Errorf("request failed")
