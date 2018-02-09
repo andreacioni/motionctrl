@@ -1,6 +1,8 @@
 package motion
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -23,7 +25,13 @@ func Init() {
 	}
 
 	if config.Get().MotionConfigFile != "" {
-		glg.Info("Motion config file specified", config.Get().MotionConfigFile)
+		_, err = os.Stat(config.Get().MotionConfigFile)
+		if err != nil {
+			glg.Info("Motion config file specified", config.Get().MotionConfigFile)
+		} else {
+			glg.Fatalf("Cannot open file %s", config.Get().MotionConfigFile)
+		}
+
 	} else {
 		glg.Fatalf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
 	}
@@ -50,16 +58,41 @@ func CheckInstall() error {
 
 }
 
-func Startup(motionDetectionStartup bool) {
+func Startup(motionDetectionStartup bool) error {
 	mu.Lock()
 	defer mu.Unlock()
+
+	var err error
+
+	if motionDetectionStartup {
+		err = exec.Command("motion", "-b", "-c", config.Get().MotionConfigFile).Run()
+	} else {
+		err = exec.Command("motion", "-b", "-m", "-c", config.Get().MotionConfigFile).Run()
+	}
+
+	if err != nil {
+		return err
+	}
+
 	started = true
+
+	return nil
 }
 
-func Shutdown() {
+func Shutdown() error {
 	mu.Lock()
 	defer mu.Unlock()
+
+	if started {
+		err := exec.Command("kill", "-2", fmt.Sprintf("$(cat %s)", motionConfMap[ProcessIdFile]), config.Get().MotionConfigFile).Run()
+		if err != nil {
+			return err
+		}
+	}
+
 	started = false
+
+	return nil
 }
 
 func IsStarted() bool {

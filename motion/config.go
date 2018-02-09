@@ -5,11 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"../version"
 )
 
 const (
-	WebControlPort = "webcontrol_port"
-	StreamPort     = "stream_port"
+	WebControlPort           = "webcontrol_port"
+	StreamPort               = "stream_port"
+	StreamAuthMethod         = "stream_auth_method"
+	StreamAuthentication     = "stream_authentication"
+	WebControlHTML           = "webcontrol_html_output"
+	WebControlParms          = "webcontrol_parms"
+	WebControlAuthentication = "webcontrol_authentication"
+	ProcessIdFile            = "process_id_file"
 )
 
 var (
@@ -28,20 +36,49 @@ func Load(filename string) error {
 }
 
 func Check(configMap map[string]string) error {
-	var err error
 	webControlPort := configMap[WebControlPort]
 
 	if webControlPort == "" {
-		err = fmt.Errorf("missing %s", WebControlPort)
+		return fmt.Errorf("missing %s", WebControlPort)
 	}
 
 	streamPort := configMap[StreamPort]
 
 	if streamPort == "" {
-		err = fmt.Errorf("missing %s", StreamPort)
+		return fmt.Errorf("missing %s", StreamPort)
 	}
 
-	return err
+	webControlHTML := configMap[WebControlHTML]
+
+	if webControlHTML == "" || webControlHTML == "on" {
+		return fmt.Errorf("%s must be disabled", WebControlHTML)
+	}
+
+	webControlParms := configMap[WebControlParms]
+
+	if webControlParms == "" || webControlParms != "2" {
+		return fmt.Errorf("web control authentication is enabled in motion config, please disable it (set to '2'). %s already has login features to protect your camera", version.Name)
+	}
+
+	webControlAuth := configMap[WebControlAuthentication]
+
+	if webControlAuth != "" {
+		return fmt.Errorf("'%s' parameter need to be commented in motion config", WebControlAuthentication)
+	}
+
+	streamAuthMethod := configMap[StreamAuthMethod]
+
+	if streamAuthMethod != "0" {
+		return fmt.Errorf("stream authentication is enabled in motion config, please disable it, %s already has login features to protect your camera", version.Name)
+	}
+
+	streamAuth := configMap[StreamAuthentication]
+
+	if streamAuth != "" {
+		return fmt.Errorf("'%s' parameter need to be commented in motion config", StreamAuthentication)
+	}
+
+	return nil
 }
 
 //TODO improve with regexp
@@ -60,8 +97,8 @@ func Parse(configFile string) (map[string]string, error) {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "#") && !strings.HasPrefix(line, ";") {
 			lines := strings.Split(line, " ")
-			if len(lines) == 2 {
-				result[lines[0]] = lines[1]
+			if len(lines) >= 2 {
+				result[lines[0]] = strings.Join(lines[1:], "")
 			}
 		}
 

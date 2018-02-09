@@ -2,6 +2,7 @@ package motion
 
 import (
 	"testing"
+	"time"
 )
 
 func TestConfigParser(t *testing.T) {
@@ -25,10 +26,30 @@ func TestCheck(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	if len(configMap) != 89 {
+		t.Error("Configuration parameters map must contain 89 elements")
+	}
 }
 
 func TestCheckInstall(t *testing.T) {
 	err := CheckInstall()
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestStartStop(t *testing.T) {
+	err := Startup(false)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	time.Sleep(time.Second * 5)
+
+	err = Shutdown()
 
 	if err != nil {
 		t.Error(err)
