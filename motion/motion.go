@@ -138,7 +138,11 @@ func IsStarted() bool {
 	return started
 }
 
-func getBaseURL() string {
+func GetStreamBaseUrl() string {
+	return fmt.Sprintf("http://%s:%s", config.BaseAddress, motionConfMap[StreamPort])
+}
+
+func GetBaseURL() string {
 	return fmt.Sprintf("http://%s:%s", config.BaseAddress, motionConfMap[WebControlPort])
 }
 
@@ -205,7 +209,7 @@ func waitDie() error {
 func waitLive() error {
 	req := gorequest.New()
 	i, secs := 0, 15
-	for _, _, errs := req.Get(getBaseURL()).End(); errs != nil && i < secs; _, _, errs = req.Get(getBaseURL()).End() {
+	for _, _, errs := req.Get(GetBaseURL()).End(); errs != nil && i < secs; _, _, errs = req.Get(GetBaseURL()).End() {
 		glg.Debugf("Waiting motion to become available (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++

@@ -19,7 +19,7 @@ func IsMotionDetectionEnabled() (bool, error) {
 	var err error
 	ret := false
 
-	resp, body, errs := gorequest.New().Get(getBaseURL() + "/0/detection/status").End()
+	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/0/detection/status").End()
 
 	if errs == nil {
 		if resp.StatusCode == 200 {
@@ -49,9 +49,9 @@ func EnableMotionDetection(enable bool) error { //TODO check for motion is runni
 
 	command := ""
 	if enable {
-		command = fmt.Sprintf(getBaseURL()+"/0/detection/start", config.BaseAddress, motionConfMap[WebControlPort])
+		command = fmt.Sprintf(GetBaseURL()+"/0/detection/start", config.BaseAddress, motionConfMap[WebControlPort])
 	} else {
-		command = fmt.Sprintf(getBaseURL()+"/0/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
+		command = fmt.Sprintf(GetBaseURL()+"/0/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
 	}
 
 	resp, body, errs := gorequest.New().Get(command).End()

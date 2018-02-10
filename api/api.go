@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -16,20 +17,27 @@ func Init() {
 	var group *gin.RouterGroup
 	r := gin.Default()
 
+	//eventGroup := r.Group("/event/")
+
 	if config.Get().Username != "" && config.Get().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
+		group = r.Group("/api", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = r.Group("/")
+		group = r.Group("/api")
 	}
 
-	group.GET("/startup", startHandler)
-	group.GET("/shutdown", stopHandler)
-	group.GET("/restart", restartHandler)
-	group.GET("/detection/status", isMotionDetectionEnabled)
-	group.GET("/detection/start", startMotionDetection)
-	group.GET("/detection/pause", pauseMotionDetection)
+	group.GET("/api/control/startup", startHandler)
+	group.GET("/api/control/shutdown", stopHandler)
+	group.GET("/api/control/restart", restartHandler)
+	group.GET("/api/detection/status", isMotionDetectionEnabled)
+	group.GET("/api/detection/start", startDetectionHandler)
+	group.GET("/api/detection/pause", pauseDetectionHandler)
+	group.GET("/api/stream", streamHandler)
+
+	/*eventGroup.GET("/event/")
+	eventGroup.GET("/event/")
+	eventGroup.GET("/event/")*/
 
 	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
 }
@@ -44,9 +52,9 @@ func startHandler(c *gin.Context) {
 	err = motion.Startup(motionDetection)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion started"})
+		c.JSON(http.StatusOK, gin.H{"message": "motion started"})
 	}
 }
 
@@ -54,9 +62,9 @@ func restartHandler(c *gin.Context) {
 	err := motion.Restart()
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion restarted"})
+		c.JSON(http.StatusOK, gin.H{"message": "motion restarted"})
 	}
 }
 
@@ -64,9 +72,9 @@ func stopHandler(c *gin.Context) {
 	err := motion.Restart()
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion stopped"})
+		c.JSON(http.StatusOK, gin.H{"message": "motion stopped"})
 	}
 }
 
@@ -74,28 +82,32 @@ func isMotionDetectionEnabled(c *gin.Context) {
 	enabled, err := motion.IsMotionDetectionEnabled()
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"motionDetectionEnabled": enabled})
+		c.JSON(http.StatusOK, gin.H{"motionDetectionEnabled": enabled})
 	}
 }
 
-func startMotionDetection(c *gin.Context) {
+func startDetectionHandler(c *gin.Context) {
 	err := motion.EnableMotionDetection(true)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion detection started"})
+		c.JSON(http.StatusOK, gin.H{"message": "motion detection started"})
 	}
 }
 
-func pauseMotionDetection(c *gin.Context) {
+func pauseDetectionHandler(c *gin.Context) {
 	err := motion.EnableMotionDetection(false)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"message": "motion detection paused"})
+		c.JSON(http.StatusOK, gin.H{"message": "motion detection paused"})
 	}
+}
+
+func streamHandler(c *gin.Context) {
+
 }
