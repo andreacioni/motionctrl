@@ -69,6 +69,11 @@ func Restart() error {
 
 				if utils.RegexMustMatch(DoneRegex, body) {
 					err = waitDie()
+
+					if err == nil {
+						err = waitLive()
+					}
+
 				} else {
 					err = fmt.Errorf("failed to restart motion: %s", body)
 				}

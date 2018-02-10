@@ -2,7 +2,6 @@ package motion
 
 import (
 	"testing"
-	"time"
 )
 
 func TestConfigParser(t *testing.T) {
@@ -53,8 +52,6 @@ func TestStartStop(t *testing.T) {
 		t.Error("not started")
 	}
 
-	time.Sleep(time.Second * 3)
-
 	err = Shutdown()
 
 	if err != nil {
@@ -72,8 +69,6 @@ func TestRestart(t *testing.T) {
 		t.Error(err)
 	}
 
-	time.Sleep(time.Second * 3)
-
 	if !IsStarted() {
 		t.Error("not started")
 	}
@@ -83,8 +78,6 @@ func TestRestart(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	time.Sleep(time.Second * 3)
 
 	err = Shutdown()
 

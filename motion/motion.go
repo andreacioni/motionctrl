@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/parnurzeal/gorequest"
+
 	"../config"
 	"../version"
 	"github.com/kpango/glg"
@@ -71,13 +73,13 @@ func CheckInstall() error {
 }
 
 func Startup(motionDetectionStartup bool) error {
+	var err error
 	mu.Lock()
 	defer mu.Unlock()
 
 	glg.Debug("Starting motion")
 
 	if !started {
-		var err error
 
 		if motionDetectionStartup {
 			err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
@@ -85,8 +87,8 @@ func Startup(motionDetectionStartup bool) error {
 			err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
 		}
 
-		if err != nil {
-			return err
+		if err == nil {
+			err = waitLive()
 		}
 	} else {
 		glg.Warn("motion is already started")
@@ -94,7 +96,7 @@ func Startup(motionDetectionStartup bool) error {
 
 	started = true
 
-	return nil
+	return err
 }
 
 func IsStarted() bool {
@@ -124,15 +126,14 @@ func readPid() (int, error) {
 }
 
 func waitDie() error {
-	glg.Debug("Waiting motion exits")
-
 	i, secs := 0, 10
 	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
+		glg.Debugf("Waiting motion exits (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++
 	}
 
-	if i == 10 {
+	if i == secs {
 		return fmt.Errorf("motion is alive after %d seconds", secs)
 	}
 
@@ -140,10 +141,10 @@ func waitDie() error {
 }
 
 func waitLive() error {
-	glg.Debug("Waiting motion to become availeble")
-
+	req := gorequest.New().Get(getBaseURL())
 	i, secs := 0, 10
-	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
+	for _, _, errs := req.End(); errs != nil && i < secs; _, _, errs = req.End() {
+		glg.Debugf("Waiting motion to become available (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++
 	}
