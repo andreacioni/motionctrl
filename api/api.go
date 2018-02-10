@@ -51,7 +51,13 @@ func startHandler(c *gin.Context) {
 }
 
 func restartHandler(c *gin.Context) {
+	err := motion.Restart()
 
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"message": "motion restarted"})
+	}
 }
 
 func stopHandler(c *gin.Context) {
