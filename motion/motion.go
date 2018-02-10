@@ -80,21 +80,53 @@ func Startup(motionDetectionStartup bool) error {
 	glg.Debug("Starting motion")
 
 	if !started {
-
-		if motionDetectionStartup {
-			err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
-		} else {
-			err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
-		}
-
-		if err == nil {
-			err = waitLive()
-		}
+		startMotion(motionDetectionStartup)
 	} else {
 		glg.Warn("motion is already started")
 	}
 
 	started = true
+
+	return err
+}
+
+func Shutdown() error {
+	var err error
+	mu.Lock()
+	defer mu.Unlock()
+
+	glg.Debug("Stopping motion")
+
+	if started {
+		stopMotion()
+	} else {
+		glg.Warn("motion is already stopped")
+	}
+
+	started = false
+
+	return err
+}
+
+func Restart() error {
+	var err error
+	mu.Lock()
+	defer mu.Unlock()
+
+	glg.Debug("Restarting motion")
+
+	if started {
+		detection, err := IsMotionDetectionEnabled()
+		if err == nil {
+			stopMotion()
+			startMotion(detection)
+		}
+
+	} else {
+		glg.Warn("motion is not started")
+	}
+
+	started = false
 
 	return err
 }
@@ -125,8 +157,37 @@ func readPid() (int, error) {
 	return pid, err
 }
 
+func startMotion(motionDetectionStartup bool) error {
+	var err error
+	if motionDetectionStartup {
+		err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
+	} else {
+		err = exec.Command("motion", "-b", "-m", "-c", motionConfigFile).Run()
+	}
+
+	if err == nil {
+		err = waitLive()
+	}
+
+	return err
+}
+
+func stopMotion() error {
+	pid, err := readPid()
+
+	if err == nil {
+		glg.Debugf("Going to kill motion (PID: %d)", pid)
+		err = exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
+		if err == nil {
+			err = waitDie()
+		}
+	}
+
+	return err
+}
+
 func waitDie() error {
-	i, secs := 0, 10
+	i, secs := 0, 15
 	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
 		glg.Debugf("Waiting motion exits (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
@@ -141,15 +202,15 @@ func waitDie() error {
 }
 
 func waitLive() error {
-	req := gorequest.New().Get(getBaseURL())
-	i, secs := 0, 10
-	for _, _, errs := req.End(); errs != nil && i < secs; _, _, errs = req.End() {
+	req := gorequest.New().Timeout(100 * time.Millisecond)
+	i, secs := 0, 15
+	for _, _, errs := req.Get(getBaseURL()).End(); errs != nil && i < secs; _, _, errs = req.Get(getBaseURL()).End() {
 		glg.Debugf("Waiting motion to become available (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++
 	}
 
-	if i == 10 {
+	if i == secs {
 		return fmt.Errorf("motion is not ready after %d seconds", secs)
 	}
 
