@@ -11,11 +11,6 @@ import (
 	"../motion"
 )
 
-const (
-	Ok                  = 200
-	InternalServerError = 500
-)
-
 func Init() {
 	glg.Info("Initializing REST API ...")
 	var group *gin.RouterGroup
@@ -49,29 +44,23 @@ func startHandler(c *gin.Context) {
 	err = motion.Startup(motionDetection)
 
 	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(Ok, gin.H{"message": "motion started"})
+		c.JSON(200, gin.H{"message": "motion started"})
 	}
 }
 
-func stopHandler(c *gin.Context) {
-	err := motion.Shutdown()
+func restartHandler(c *gin.Context) {
 
-	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
-	} else {
-		c.JSON(Ok, gin.H{"message": "motion stopped"})
-	}
 }
 
 func stopHandler(c *gin.Context) {
 	err := motion.Restart()
 
 	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(Ok, gin.H{"message": "motion stopped"})
+		c.JSON(200, gin.H{"message": "motion stopped"})
 	}
 }
 
@@ -79,9 +68,9 @@ func isMotionDetectionEnabled(c *gin.Context) {
 	enabled, err := motion.IsMotionDetectionEnabled()
 
 	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(Ok, gin.H{"motionDetectionEnabled": enabled})
+		c.JSON(200, gin.H{"motionDetectionEnabled": enabled})
 	}
 }
 
@@ -89,9 +78,9 @@ func startMotionDetection(c *gin.Context) {
 	err := motion.EnableMotionDetection(true)
 
 	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(Ok, gin.H{"message": "motion detection started"})
+		c.JSON(200, gin.H{"message": "motion detection started"})
 	}
 }
 
@@ -99,8 +88,8 @@ func pauseMotionDetection(c *gin.Context) {
 	err := motion.EnableMotionDetection(false)
 
 	if err != nil {
-		c.JSON(InternalServerError, gin.H{"message": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 	} else {
-		c.JSON(Ok, gin.H{"message": "motion detection paused"})
+		c.JSON(200, gin.H{"message": "motion detection paused"})
 	}
 }

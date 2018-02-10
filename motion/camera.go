@@ -16,11 +16,10 @@ const (
 )
 
 func IsMotionDetectionEnabled() (bool, error) {
-	ret, err := false, error(nil)
-	mu.Lock()
-	defer mu.Unlock()
+	var err error
+	ret := false
 
-	resp, body, errs := gorequest.New().Get(getBaseURL() + "0/detection/status").End()
+	resp, body, errs := gorequest.New().Get(getBaseURL() + "/0/detection/status").End()
 
 	if errs == nil {
 		if resp.StatusCode == 200 {
@@ -47,8 +46,6 @@ func IsMotionDetectionEnabled() (bool, error) {
 
 func EnableMotionDetection(enable bool) error { //TODO check for motion is running
 	err := error(nil)
-	mu.Lock()
-	defer mu.Unlock()
 
 	command := ""
 	if enable {

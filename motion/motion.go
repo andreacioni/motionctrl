@@ -110,23 +110,24 @@ func Shutdown() error {
 
 func Restart() error {
 	var err error
+	var detection bool
 	mu.Lock()
 	defer mu.Unlock()
 
 	glg.Debug("Restarting motion")
 
 	if started {
-		detection, err := IsMotionDetectionEnabled()
+		detection, err = IsMotionDetectionEnabled()
 		if err == nil {
-			stopMotion()
-			startMotion(detection)
+			err = stopMotion()
+			if err == nil {
+				err = startMotion(detection)
+			}
 		}
 
 	} else {
 		glg.Warn("motion is not started")
 	}
-
-	started = false
 
 	return err
 }
@@ -202,7 +203,7 @@ func waitDie() error {
 }
 
 func waitLive() error {
-	req := gorequest.New().Timeout(100 * time.Millisecond)
+	req := gorequest.New()
 	i, secs := 0, 15
 	for _, _, errs := req.Get(getBaseURL()).End(); errs != nil && i < secs; _, _, errs = req.Get(getBaseURL()).End() {
 		glg.Debugf("Waiting motion to become available (attempts: %d/%d)", i, secs)
