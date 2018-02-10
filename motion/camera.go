@@ -2,6 +2,7 @@ package motion
 
 import (
 	"fmt"
+	"net/http"
 
 	"../config"
 	"../utils"
@@ -22,7 +23,7 @@ func IsMotionDetectionEnabled() (bool, error) {
 	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/0/detection/status").End()
 
 	if errs == nil {
-		if resp.StatusCode == 200 {
+		if resp.StatusCode == http.StatusOK {
 			glg.Debugf("Response body: %s", body)
 
 			status := utils.RegexFirstSubmatchString(DetectionStatusRegex, body)
@@ -57,7 +58,7 @@ func EnableMotionDetection(enable bool) error { //TODO check for motion is runni
 	resp, body, errs := gorequest.New().Get(command).End()
 
 	if errs == nil {
-		if resp.StatusCode == 200 {
+		if resp.StatusCode == http.StatusOK {
 			glg.Debugf("Response body: %s", body)
 
 			if utils.RegexMustMatch(DoneRegex, body) {

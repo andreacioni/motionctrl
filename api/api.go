@@ -12,12 +12,20 @@ import (
 	"../motion"
 )
 
+var handlersMap = map[string]func(*gin.Context){
+	"/api/control/startup":  startHandler,
+	"/api/control/shutdown": stopHandler,
+	"/api/control/restart":  restartHandler,
+	"/api/detection/status": isMotionDetectionEnabled,
+	"/api/detection/start":  startDetectionHandler,
+	"/api/detection/pause":  pauseDetectionHandler,
+	"/api/stream":           streamHandler,
+}
+
 func Init() {
 	glg.Info("Initializing REST API ...")
 	var group *gin.RouterGroup
 	r := gin.Default()
-
-	//eventGroup := r.Group("/event/")
 
 	if config.Get().Username != "" && config.Get().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
@@ -27,17 +35,9 @@ func Init() {
 		group = r.Group("/api")
 	}
 
-	group.GET("/api/control/startup", startHandler)
-	group.GET("/api/control/shutdown", stopHandler)
-	group.GET("/api/control/restart", restartHandler)
-	group.GET("/api/detection/status", isMotionDetectionEnabled)
-	group.GET("/api/detection/start", startDetectionHandler)
-	group.GET("/api/detection/pause", pauseDetectionHandler)
-	group.GET("/api/stream", streamHandler)
-
-	/*eventGroup.GET("/event/")
-	eventGroup.GET("/event/")
-	eventGroup.GET("/event/")*/
+	for k, v := range handlersMap {
+		group.GET(k, v)
+	}
 
 	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
 }
