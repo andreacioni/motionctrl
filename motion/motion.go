@@ -7,7 +7,9 @@ import (
 	"os/exec"
 	"strconv"
 	"sync"
+	"time"
 
+	"../config"
 	"../version"
 	"github.com/kpango/glg"
 )
@@ -71,6 +73,9 @@ func CheckInstall() error {
 func Startup(motionDetectionStartup bool) error {
 	mu.Lock()
 	defer mu.Unlock()
+
+	glg.Debug("Starting motion")
+
 	if !started {
 		var err error
 
@@ -92,37 +97,14 @@ func Startup(motionDetectionStartup bool) error {
 	return nil
 }
 
-func Shutdown() error {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if started {
-
-		pid, err := readPid()
-
-		if err == nil {
-			glg.Debugf("Going to kill motion (PID: %d)", pid)
-			err := exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
-			if err != nil {
-				return fmt.Errorf("failed to kill motion instance: %s", err)
-			}
-		} else {
-			return fmt.Errorf("cannot read pid of motion process: %s", err)
-		}
-
-	} else {
-		glg.Warn("motion is already stopped")
-	}
-
-	started = false
-
-	return nil
-}
-
 func IsStarted() bool {
 	mu.Lock()
 	defer mu.Unlock()
 	return started
+}
+
+func getBaseURL() string {
+	return fmt.Sprintf("http://%s:%s", config.BaseAddress, motionConfMap[WebControlPort])
 }
 
 func readPid() (int, error) {
@@ -139,4 +121,36 @@ func readPid() (int, error) {
 	}
 
 	return pid, err
+}
+
+func waitDie() error {
+	glg.Debug("Waiting motion exits")
+
+	i, secs := 0, 10
+	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
+		time.Sleep(time.Second)
+		i++
+	}
+
+	if i == 10 {
+		return fmt.Errorf("motion is alive after %d seconds", secs)
+	}
+
+	return nil
+}
+
+func waitLive() error {
+	glg.Debug("Waiting motion to become availeble")
+
+	i, secs := 0, 10
+	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
+		time.Sleep(time.Second)
+		i++
+	}
+
+	if i == 10 {
+		return fmt.Errorf("motion is not ready after %d seconds", secs)
+	}
+
+	return nil
 }

@@ -41,6 +41,28 @@ func TestCheckInstall(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
+	Init("./motion_test.conf")
+
+	err := Startup(false)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !IsStarted() {
+		t.Error("not started")
+	}
+
+	time.Sleep(time.Second * 3)
+
+	err = Shutdown()
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestRestart(t *testing.T) {
 
 	Init("./motion_test.conf")
 
@@ -55,6 +77,14 @@ func TestStartStop(t *testing.T) {
 	if !IsStarted() {
 		t.Error("not started")
 	}
+
+	err = Restart()
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	time.Sleep(time.Second * 3)
 
 	err = Shutdown()
 
