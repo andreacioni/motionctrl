@@ -22,7 +22,7 @@ var (
 	motionConfigFile string
 )
 
-func Init(configFile string) {
+func Init(configFile string, autostart bool) {
 
 	err := CheckInstall()
 
@@ -57,6 +57,11 @@ func Init(configFile string) {
 	}
 
 	motionConfigFile = configFile
+
+	if autostart {
+		glg.Infof("Starting motion")
+		//TODO
+	}
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error
@@ -77,7 +82,7 @@ func Startup(motionDetectionStartup bool) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	glg.Debug("Starting motion (detection enabled: %t)", motionDetectionStartup)
+	glg.Debugf("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
 	if !started {
 		startMotion(motionDetectionStartup)

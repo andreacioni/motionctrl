@@ -15,6 +15,7 @@ import (
 var (
 	configFile string
 	logLevel   string
+	autostart  bool
 )
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 
 	config.Load(configFile)
 
-	motion.Init(config.Get().MotionConfigFile)
+	motion.Init(config.Get().MotionConfigFile, autostart)
 
 	api.Init()
 }
@@ -38,6 +39,7 @@ func setupLogger() {
 func parseArgs() {
 	flag.StringVar(&configFile, "c", "./config.json", "configuration file path")
 	flag.StringVar(&logLevel, "l", "WARN", "set log level")
+	flag.BoolVar(&autostart, "a", false, "start motion on launch")
 
 	flag.Parse()
 }

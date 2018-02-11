@@ -11,9 +11,6 @@ const (
 	BaseAddress = "127.0.0.1"
 )
 
-type Authentication struct {
-}
-
 type Configuration struct {
 	Address          string `json:"address"`
 	Port             int    `json:"port"`
