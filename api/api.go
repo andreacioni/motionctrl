@@ -30,10 +30,10 @@ func Init() {
 
 	if config.Get().Username != "" && config.Get().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = r.Group("/api", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
+		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = r.Group("/api")
+		group = r.Group("/")
 	}
 
 	for k, v := range handlersMap {
@@ -116,6 +116,6 @@ func pauseDetectionHandler(c *gin.Context) {
 }
 
 func streamHandler(c *gin.Context) {
-	c.Header("Content-Type", "multipart/x-mixed-replace; boundary=BoundaryString")
+	c.Header("Content-Type", "multipart/x-mixed-replace; boundary="+motion.MotionStreamBoundary)
 	c.Stream(bridgeStream)
 }
