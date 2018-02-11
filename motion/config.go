@@ -9,6 +9,8 @@ import (
 	"../version"
 )
 
+const MotionStreamBoundary = "BoundaryString"
+
 const (
 	WebControlPort           = "webcontrol_port"
 	StreamPort               = "stream_port"

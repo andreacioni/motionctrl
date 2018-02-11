@@ -13,13 +13,14 @@ import (
 )
 
 var handlersMap = map[string]func(*gin.Context){
-	"/api/control/startup":  startHandler,
-	"/api/control/shutdown": stopHandler,
-	"/api/control/restart":  restartHandler,
-	"/api/detection/status": isMotionDetectionEnabled,
-	"/api/detection/start":  startDetectionHandler,
-	"/api/detection/pause":  pauseDetectionHandler,
-	"/api/stream":           streamHandler,
+	"/control/startup":  startHandler,
+	"/control/shutdown": stopHandler,
+	"/control/status":   statusHandler,
+	"/control/restart":  restartHandler,
+	"/detection/status": isMotionDetectionEnabled,
+	"/detection/start":  startDetectionHandler,
+	"/detection/pause":  pauseDetectionHandler,
+	"/camera":           streamHandler,
 }
 
 func Init() {
@@ -78,6 +79,12 @@ func stopHandler(c *gin.Context) {
 	}
 }
 
+func statusHandler(c *gin.Context) {
+	started := motion.IsStarted()
+
+	c.JSON(http.StatusOK, gin.H{"motionStarted": started})
+}
+
 func isMotionDetectionEnabled(c *gin.Context) {
 	enabled, err := motion.IsMotionDetectionEnabled()
 
@@ -109,5 +116,6 @@ func pauseDetectionHandler(c *gin.Context) {
 }
 
 func streamHandler(c *gin.Context) {
-
+	c.Header("Content-Type", "multipart/x-mixed-replace; boundary=BoundaryString")
+	c.Stream(bridgeStream)
 }

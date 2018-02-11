@@ -77,7 +77,7 @@ func Startup(motionDetectionStartup bool) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	glg.Debug("Starting motion")
+	glg.Debug("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
 	if !started {
 		startMotion(motionDetectionStartup)
@@ -138,7 +138,7 @@ func IsStarted() bool {
 	return started
 }
 
-func GetStreamBaseUrl() string {
+func GetStreamBaseURL() string {
 	return fmt.Sprintf("http://%s:%s", config.BaseAddress, motionConfMap[StreamPort])
 }
 

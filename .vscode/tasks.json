@@ -8,6 +8,11 @@
             "type": "shell",
             "command": "go run main.go",
             "problemMatcher": []
+        },{
+            "label": "Compile",
+            "type": "shell",
+            "command": "go build main.go -o motioncompile",
+            "problemMatcher": []
         }
     ]
 }
