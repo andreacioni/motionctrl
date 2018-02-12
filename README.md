@@ -13,11 +13,13 @@ Configuration istruction
 __Available API__
 
 
-List of all available API and their description
+List of all available API and their description. Return value is always a JSON containing different values for each command (see table).
 
 
-| Path | Description | Parameter |
-| ------------- | ------------- | ------------- |
-| /startup[?detection=true\|false] | Launch motion | **detection** parameter should be used to start motion with motion detection enabled at startup (default=__false__)
-| /shutdown | Shutdown motion |
+| Path | Description | Parameter | Return |
+| ------------- | ------------- | ------------- | ------------- |
+| /control/startup[?detection=true\|false] | Launch motion | **detection** parameter should be used to start motion with motion detection enabled at startup (default=__false__) | empty JSON object |
+| /control/shutdown | Shutdown motion | no parameters | empty JSON object |
+| /control/status | Report if motion is curretly running | no parameters  | **motionStarted**(bool): true if motion is running |
 
+When call fail (HTTP status code != 200), returned JSON object contains only a **message** field with some additional description of the error.

@@ -6,21 +6,15 @@ import (
 
 	"../config"
 	"../utils"
-
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
-)
-
-const (
-	DetectionStatusRegex = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
-	DoneRegex            = "\nDone"
 )
 
 func IsMotionDetectionEnabled() (bool, error) {
 	var err error
 	ret := false
 
-	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/0/detection/status").End()
+	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/detection/status").End()
 
 	if errs == nil {
 		if resp.StatusCode == http.StatusOK {
@@ -50,9 +44,9 @@ func EnableMotionDetection(enable bool) error { //TODO check for motion is runni
 
 	command := ""
 	if enable {
-		command = fmt.Sprintf(GetBaseURL()+"/0/detection/start", config.BaseAddress, motionConfMap[WebControlPort])
+		command = fmt.Sprintf(GetBaseURL()+"/detection/start", config.BaseAddress, motionConfMap[WebControlPort])
 	} else {
-		command = fmt.Sprintf(GetBaseURL()+"/0/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
+		command = fmt.Sprintf(GetBaseURL()+"/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
 	}
 
 	resp, body, errs := gorequest.New().Get(command).End()

@@ -10,6 +10,7 @@ import (
 
 	"../config"
 	"../motion"
+	"../utils"
 )
 
 var handlersMap = map[string]func(*gin.Context){
@@ -20,7 +21,10 @@ var handlersMap = map[string]func(*gin.Context){
 	"/detection/status": isMotionDetectionEnabled,
 	"/detection/start":  startDetectionHandler,
 	"/detection/pause":  pauseDetectionHandler,
-	"/camera":           streamHandler,
+	"/camera":           utils.ReverseProxy("http://localhost:8081"),
+	"/config/list":      listConfigHandler,
+	"/config/set":       setConfigHandler,
+	"/config/get":       getConfigHandler,
 }
 
 func Init() {
@@ -70,7 +74,7 @@ func restartHandler(c *gin.Context) {
 }
 
 func stopHandler(c *gin.Context) {
-	err := motion.Restart()
+	err := motion.Shutdown()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -115,7 +119,19 @@ func pauseDetectionHandler(c *gin.Context) {
 	}
 }
 
-func streamHandler(c *gin.Context) {
-	c.Header("Content-Type", "multipart/x-mixed-replace; boundary="+motion.MotionStreamBoundary)
-	c.Stream(bridgeStream)
+func listConfigHandler(c *gin.Context) {
+	configMap, err := motion.ConfigGet(c.Query(""))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, configMap)
+	}
+}
+
+func setConfigHandler(c *gin.Context) {
+}
+
+func getConfigHandler(c *gin.Context) {
+
 }

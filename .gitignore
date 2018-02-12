@@ -1,5 +1,5 @@
 #VS code
-.vscode
+.vscode/
 
 # Binaries for programs and plugins
 *.exe
