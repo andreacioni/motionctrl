@@ -29,7 +29,7 @@ func GetBaseURL() string {
 	return fmt.Sprintf("http://%s:%s/0", config.BaseAddress, motionConfMap[WebControlPort])
 }
 
-func WebControlGet(path string, callback func(string) (interface{}, error)) (interface{}, error) {
+func webControlGet(path string, callback func(string) (interface{}, error)) (interface{}, error) {
 	var err error
 	var ret interface{}
 

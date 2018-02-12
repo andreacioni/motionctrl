@@ -120,7 +120,7 @@ func Parse(configFile string) (map[string]string, error) {
 }
 
 func ConfigList() (map[string]interface{}, error) {
-	ret, err := WebControlGet("/config/list", func(body string) (interface{}, error) {
+	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
 		return nil, nil
 	})
 
@@ -128,7 +128,7 @@ func ConfigList() (map[string]interface{}, error) {
 }
 
 func ConfigGet(param string) (interface{}, error) {
-	ret, err := WebControlGet("/config/get", func(body string) (interface{}, error) {
+	ret, err := webControlGet("/config/get", func(body string) (interface{}, error) {
 		return nil, nil
 	})
 
@@ -137,9 +137,9 @@ func ConfigGet(param string) (interface{}, error) {
 }
 
 func ConfigSet(param string, value interface{}) error {
-	ret, err := WebControlGet("/config/set", func(body string) (interface{}, error) {
+	_, err := webControlGet("/config/set", func(body string) (interface{}, error) {
 		return nil, nil
 	})
 
-	return ret.(map[string]interface{}), err
+	return err
 }

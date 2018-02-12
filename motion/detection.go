@@ -8,7 +8,7 @@ import (
 )
 
 func IsMotionDetectionEnabled() (bool, error) {
-	ret, err := WebControlGet("/detection/status", func(body string) (interface{}, error) {
+	ret, err := webControlGet("/detection/status", func(body string) (interface{}, error) {
 		status := utils.RegexFirstSubmatchString(DetectionStatusRegex, body)
 		if status == "ACTIVE" {
 			return true, nil
@@ -30,11 +30,12 @@ func EnableMotionDetection(enable bool) error { //TODO check for motion is runni
 		path = fmt.Sprintf(GetBaseURL()+"/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
 	}
 
-	return WebControlGet(path, func(body string) (interface{}, error) {
-		var err error
+	_, err := webControlGet(path, func(body string) (interface{}, error) {
 		if utils.RegexMustMatch(DoneRegex, body) {
-			err = fmt.Errorf("unable to enable motion detection (%s)", body)
+			return nil, fmt.Errorf("unable to enable motion detection (%s)", body)
 		}
-		return nil, err
+		return nil, nil
 	})
+
+	return err
 }
