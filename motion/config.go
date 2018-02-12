@@ -3,14 +3,9 @@ package motion
 import (
 	"bufio"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
-	"github.com/kpango/glg"
-	"github.com/parnurzeal/gorequest"
-
-	"../utils"
 	"../version"
 )
 
@@ -125,39 +120,26 @@ func Parse(configFile string) (map[string]string, error) {
 }
 
 func ConfigList() (map[string]interface{}, error) {
-	var err error
-	configMap := new(map[string]interface{})
+	ret, err := WebControlGet("/config/list", func(body string) (interface{}, error) {
+		return nil, nil
+	})
 
-	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/config/list").End()
-
-	if errs == nil {
-		if resp.StatusCode == http.StatusOK {
-			glg.Debugf("Response body: %s", body)
-
-			status := utils.RegexFirstSubmatchString(DetectionStatusRegex, body)
-			if status == "ACTIVE" {
-				configMap, err = nil, nil
-			} else if status == "PAUSE" {
-				configMap, err = nil, nil
-			} else {
-				configMap, err = nil, fmt.Errorf("unknown status string: %s", status)
-			}
-
-		} else {
-			configMap, err = nil, fmt.Errorf("request failed with code: %d", resp.StatusCode)
-		}
-	} else {
-		configMap, err = nil, errs[0] //TODO errs[0] not the best
-	}
-
-	return configMap, err
+	return ret.(map[string]interface{}), err
 }
 
 func ConfigGet(param string) (interface{}, error) {
-	return nil, nil
+	ret, err := WebControlGet("/config/get", func(body string) (interface{}, error) {
+		return nil, nil
+	})
+
+	return ret.(map[string]interface{}), err
 
 }
 
 func ConfigSet(param string, value interface{}) error {
-	return nil
+	ret, err := WebControlGet("/config/set", func(body string) (interface{}, error) {
+		return nil, nil
+	})
+
+	return ret.(map[string]interface{}), err
 }
