@@ -4,14 +4,38 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+
+	"github.com/kpango/glg"
 
 	"../utils"
 	"../version"
 )
 
+var ConfigTypeMapper = func(s string) interface{} {
+
+	integer, err := strconv.Atoi(s)
+
+	if err == nil {
+		return integer
+	}
+
+	switch s {
+	case "on":
+		return true
+	case "off":
+		return false
+	case "(null)":
+		return nil
+	default:
+		return s
+	}
+}
+
 const (
 	ConfigDefaultParserRegex = "(?m)^([^;#][a-zA-Z0-9_]+) ([a-zA-Z0-9_]+)$"
+	ListConfigParserRegex    = "(?m)^([^;#][a-zA-Z0-9_]+) = ([a-zA-Z0-9_]+)$"
 	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
 	DoneRegex                = "\nDone"
 )
@@ -126,15 +150,19 @@ func Parse(configFile string) (map[string]string, error) {
 
 func ConfigList() (map[string]interface{}, error) {
 	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchMap(ConfigDefaultParserRegex, body)
-
+		ret := utils.RegexSubmatchTypedMap(ListConfigParserRegex, body, ConfigTypeMapper)
+		glg.Log(ret)
 		if len(ret) == 0 {
 			return nil, fmt.Errorf("empty configuration")
 		}
 		return ret, nil
 	})
 
-	return ret.(map[string]interface{}), err
+	if err != nil {
+		return nil, err
+	}
+
+	return ret.(map[string]interface{}), nil
 }
 
 func ConfigGet(param string) (interface{}, error) {
@@ -155,5 +183,5 @@ func ConfigSet(param string, value interface{}) error {
 }
 
 func ConfigTypeMap(s string) interface{} {
-
+	return nil
 }

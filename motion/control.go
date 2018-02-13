@@ -13,7 +13,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-func Init(configFile string, autostart bool) {
+func Init(configFile string) {
 
 	err := CheckInstall()
 
@@ -49,10 +49,10 @@ func Init(configFile string, autostart bool) {
 
 	motionConfigFile = configFile
 
-	if autostart {
-		glg.Infof("Starting motion")
-		//TODO
-	}
+	//if autostart {
+	//glg.Infof("Starting motion")
+	//TODO
+	//}
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error

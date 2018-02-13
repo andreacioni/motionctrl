@@ -14,6 +14,12 @@ func RegexSubmatchTypedMap(regex string, str string, typeMapper func(string) int
 	strs := re.FindAllStringSubmatch(str, -1)
 	retMap := make(map[string]interface{})
 
+	if typeMapper == nil {
+		typeMapper = func(s string) interface{} {
+			return s
+		}
+	}
+
 	for i := 0; i < len(strs); i++ {
 		retMap[strs[i][1]] = typeMapper(strs[i][2])
 	}
