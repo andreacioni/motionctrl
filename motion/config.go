@@ -166,11 +166,12 @@ func ConfigList() (map[string]interface{}, error) {
 }
 
 func ConfigGet(param string) (interface{}, error) {
-	ret, err := webControlGet("/config/get", func(body string) (interface{}, error) {
+	queryURL := fmt.Sprintf("/config/get?query=%s", param)
+	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
 		return nil, nil
 	})
 
-	return ret.(map[string]interface{}), err
+	return ret, err
 
 }
 
