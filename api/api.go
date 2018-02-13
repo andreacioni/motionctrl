@@ -3,6 +3,8 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +12,6 @@ import (
 
 	"../config"
 	"../motion"
-	"../utils"
 )
 
 var handlersMap = map[string]func(*gin.Context){
@@ -21,7 +22,7 @@ var handlersMap = map[string]func(*gin.Context){
 	"/detection/status": isMotionDetectionEnabled,
 	"/detection/start":  startDetectionHandler,
 	"/detection/pause":  pauseDetectionHandler,
-	"/camera":           utils.ReverseProxy("http://localhost:8081"),
+	"/camera":           proxyStream,
 	"/config/list":      listConfigHandler,
 	"/config/set":       setConfigHandler,
 	"/config/get":       getConfigHandler,
@@ -119,8 +120,15 @@ func pauseDetectionHandler(c *gin.Context) {
 	}
 }
 
+//proxyStream is a courtesy of: https://github.com/gin-gonic/gin/issues/686
+func proxyStream(c *gin.Context) {
+	url, _ := url.Parse(motion.GetStreamBaseURL())
+	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
 func listConfigHandler(c *gin.Context) {
-	configMap, err := motion.ConfigGet(c.Query(""))
+	configMap, err := motion.ConfigList()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

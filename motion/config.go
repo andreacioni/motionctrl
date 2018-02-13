@@ -6,10 +6,15 @@ import (
 	"os"
 	"strings"
 
+	"../utils"
 	"../version"
 )
 
-const MotionStreamBoundary = "BoundaryString"
+const (
+	ConfigDefaultParserRegex = "(?m)^([^;#][a-zA-Z0-9_]+) ([a-zA-Z0-9_]+)$"
+	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
+	DoneRegex                = "\nDone"
+)
 
 const (
 	WebControlPort           = "webcontrol_port"
@@ -121,7 +126,12 @@ func Parse(configFile string) (map[string]string, error) {
 
 func ConfigList() (map[string]interface{}, error) {
 	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
-		return nil, nil
+		ret := utils.RegexSubmatchMap(ConfigDefaultParserRegex, body)
+
+		if len(ret) == 0 {
+			return nil, fmt.Errorf("empty configuration")
+		}
+		return ret, nil
 	})
 
 	return ret.(map[string]interface{}), err
@@ -142,4 +152,8 @@ func ConfigSet(param string, value interface{}) error {
 	})
 
 	return err
+}
+
+func ConfigTypeMap(s string) interface{} {
+
 }

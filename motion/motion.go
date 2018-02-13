@@ -10,11 +10,6 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-const (
-	DetectionStatusRegex = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
-	DoneRegex            = "\nDone"
-)
-
 var (
 	mu               sync.Mutex
 	started          bool
