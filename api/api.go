@@ -137,9 +137,22 @@ func listConfigHandler(c *gin.Context) {
 	}
 }
 
-func setConfigHandler(c *gin.Context) {
+func getConfigHandler(c *gin.Context) {
+	query := c.Query("query")
+
+	if query == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "query parameter not specified"})
+	} else {
+		config, err := motion.ConfigGet(query)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+		} else {
+			c.JSON(http.StatusOK, config)
+		}
+	}
+
 }
 
-func getConfigHandler(c *gin.Context) {
-
+func setConfigHandler(c *gin.Context) {
 }

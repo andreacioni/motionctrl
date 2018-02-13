@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kpango/glg"
-
 	"../utils"
 	"../version"
 )
@@ -36,6 +34,7 @@ var ConfigTypeMapper = func(s string) interface{} {
 const (
 	ConfigDefaultParserRegex = "(?m)^([^;#][a-zA-Z0-9_]+) ([a-zA-Z0-9_]+)$"
 	ListConfigParserRegex    = "(?m)^([^;#][a-zA-Z0-9_]+) = ([a-zA-Z0-9_]+)$"
+	GetConfigParserRegex     = "([^;#][a-zA-Z0-9_]+) = ([a-zA-Z0-9_]+)\nDone"
 	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
 	DoneRegex                = "\nDone"
 )
@@ -151,7 +150,7 @@ func Parse(configFile string) (map[string]string, error) {
 func ConfigList() (map[string]interface{}, error) {
 	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
 		ret := utils.RegexSubmatchTypedMap(ListConfigParserRegex, body, ConfigTypeMapper)
-		glg.Log(ret)
+
 		if len(ret) == 0 {
 			return nil, fmt.Errorf("empty configuration")
 		}
@@ -165,13 +164,22 @@ func ConfigList() (map[string]interface{}, error) {
 	return ret.(map[string]interface{}), nil
 }
 
-func ConfigGet(param string) (interface{}, error) {
+func ConfigGet(param string) (map[string]interface{}, error) {
 	queryURL := fmt.Sprintf("/config/get?query=%s", param)
 	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		return nil, nil
+		ret := utils.RegexSubmatchTypedMap(GetConfigParserRegex, body, ConfigTypeMapper)
+
+		if len(ret) == 0 {
+			return nil, fmt.Errorf("invalid query (%s)", body)
+		}
+		return ret, nil
 	})
 
-	return ret, err
+	if err != nil {
+		return nil, err
+	}
+
+	return ret.(map[string]interface{}), nil
 
 }
 
