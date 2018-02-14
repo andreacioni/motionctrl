@@ -132,5 +132,11 @@ func TestRegexConfigList(t *testing.T) {
 
 func TestRegexSetRegex(t *testing.T) {
 	testString := "testparam = Hello\nDone"
+	testURL := "/config/set?daemon=true"
+
 	assert.True(t, utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, "testparam", "Hello"), testString))
+
+	mapped := utils.RegexSubmatchTypedMap("/config/set\\?("+KeyValueRegex+"+)=("+KeyValueRegex+"+)", testURL, nil)
+	assert.Equal(t, 1, len(mapped))
+
 }

@@ -156,17 +156,19 @@ func getConfigHandler(c *gin.Context) {
 }
 
 func setConfigHandler(c *gin.Context) {
-	nameAndValue := utils.RegexSubmatchTypedMap("/config/set?("+motion.KeyValueRegex+")=("+motion.KeyValueRegex+")", fmt.Sprintf("%s", c.Request.URL), nil)
-
-	if name == "" || value == "" {
+	nameAndValue := utils.RegexSubmatchTypedMap("/config/set\\?("+motion.KeyValueRegex+"+)=("+motion.KeyValueRegex+"+)", fmt.Sprint(c.Request.URL), motion.ReverseConfigTypeMapper)
+	glg.Logf("%+v", nameAndValue)
+	if len(nameAndValue) != 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
 	} else {
-		err := motion.ConfigSet(name, value)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
-		} else {
-			c.JSON(http.StatusOK, gin.H{"message": "'query' parameter not specified"})
+		for k, v := range nameAndValue {
+			err := motion.ConfigSet(k, v.(string))
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+			} else {
+				c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
+			}
 		}
+
 	}
 }
