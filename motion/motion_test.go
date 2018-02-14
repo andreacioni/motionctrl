@@ -1,6 +1,7 @@
 package motion
 
 import (
+	"fmt"
 	"testing"
 
 	"../utils"
@@ -127,4 +128,9 @@ func TestRegexConfigList(t *testing.T) {
 	assert.Empty(t, testMap["nullparam"])
 	assert.Equal(t, true, testMap["onoff"])
 	assert.Equal(t, false, testMap["offon"])
+}
+
+func TestRegexSetRegex(t *testing.T) {
+	testString := "testparam = Hello\nDone"
+	assert.True(t, utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, "testparam", "Hello"), testString))
 }

@@ -32,9 +32,11 @@ var ConfigTypeMapper = func(s string) interface{} {
 }
 
 const (
-	ConfigDefaultParserRegex = "(?m)^([^;#][a-zA-Z0-9_]+) ([a-zA-Z0-9_]+)$"
-	ListConfigParserRegex    = "(?m)^([^;#][a-zA-Z0-9_]+) = ([a-zA-Z0-9_]+)$"
-	GetConfigParserRegex     = "([^;#][a-zA-Z0-9_]+) = ([a-zA-Z0-9_]+)\nDone"
+	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
+	ConfigDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
+	ListConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
+	GetConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
+	SetConfigParserRegex     = "%s = %s\nDone"
 	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
 	DoneRegex                = "\nDone"
 )
@@ -183,8 +185,13 @@ func ConfigGet(param string) (map[string]interface{}, error) {
 
 }
 
-func ConfigSet(param string, value interface{}) error {
-	_, err := webControlGet("/config/set", func(body string) (interface{}, error) {
+func ConfigSet(name string, value string) error {
+	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
+	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, name, value), body) {
+			return nil, fmt.Errorf("there was an error on setting '%s' parameter", name)
+		}
+
 		return nil, nil
 	})
 

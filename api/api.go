@@ -12,6 +12,7 @@ import (
 
 	"../config"
 	"../motion"
+	"../utils"
 )
 
 var handlersMap = map[string]func(*gin.Context){
@@ -49,19 +50,20 @@ func Init() {
 }
 
 func startHandler(c *gin.Context) {
-	motionDetection, err := strconv.ParseBool(c.Query("detection"))
+	motionDetection, err := strconv.ParseBool(c.DefaultQuery("detection", "false"))
 
 	if err != nil {
-		motionDetection = false
-	}
-
-	err = motion.Startup(motionDetection)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "'detection' parameter must be 'true' or 'false'"})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"message": "motion started"})
+		err = motion.Startup(motionDetection)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "motion started"})
+		}
 	}
+
 }
 
 func restartHandler(c *gin.Context) {
@@ -129,7 +131,7 @@ func proxyStream(c *gin.Context) {
 
 func listConfigHandler(c *gin.Context) {
 	configMap, err := motion.ConfigList()
-
+	glg.Log(c.Request.URL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
@@ -141,7 +143,7 @@ func getConfigHandler(c *gin.Context) {
 	query := c.Query("query")
 
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "query parameter not specified"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "'query' parameter not specified"})
 	} else {
 		config, err := motion.ConfigGet(query)
 
@@ -151,8 +153,20 @@ func getConfigHandler(c *gin.Context) {
 			c.JSON(http.StatusOK, config)
 		}
 	}
-
 }
 
 func setConfigHandler(c *gin.Context) {
+	nameAndValue := utils.RegexSubmatchTypedMap("/config/set?("+motion.KeyValueRegex+")=("+motion.KeyValueRegex+")", fmt.Sprintf("%s", c.Request.URL), nil)
+
+	if name == "" || value == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
+	} else {
+		err := motion.ConfigSet(name, value)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "'query' parameter not specified"})
+		}
+	}
 }
