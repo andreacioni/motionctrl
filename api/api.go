@@ -157,7 +157,7 @@ func getConfigHandler(c *gin.Context) {
 
 func setConfigHandler(c *gin.Context) {
 	nameAndValue := utils.RegexSubmatchTypedMap("/config/set\\?("+motion.KeyValueRegex+"+)=("+motion.KeyValueRegex+"+)", fmt.Sprint(c.Request.URL), motion.ReverseConfigTypeMapper)
-	glg.Logf("%+v", nameAndValue)
+
 	if len(nameAndValue) != 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
 	} else {
