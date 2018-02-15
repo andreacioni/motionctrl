@@ -24,7 +24,7 @@ var handlersMap = map[string]func(*gin.Context){
 	"/control/restart":  restartHandler,
 	"/detection/status": isMotionDetectionEnabled,
 	"/detection/start":  startDetectionHandler,
-	"/detection/pause":  pauseDetectionHandler,
+	"/detection/stop":   stopDetectionHandler,
 	"/camera":           proxyStream,
 	"/config/list":      listConfigHandler,
 	"/config/set":       setConfigHandler,
@@ -129,7 +129,7 @@ func startDetectionHandler(c *gin.Context) {
 	}
 }
 
-func pauseDetectionHandler(c *gin.Context) {
+func stopDetectionHandler(c *gin.Context) {
 	err := motion.EnableMotionDetection(false)
 
 	if err != nil {
@@ -208,7 +208,7 @@ func setConfigHandler(c *gin.Context) {
 
 		}
 	} else {
-		c.JSON(http.StatusBadGateway, gin.H{"message": "'writeback' parameter must be true/false"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "'writeback' parameter must be true/false"})
 	}
 
 }
