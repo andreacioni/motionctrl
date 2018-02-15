@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kpango/glg"
@@ -37,10 +38,10 @@ func Init() {
 
 	if config.Get().Username != "" && config.Get().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}))
+		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}), needMotionUp)
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = r.Group("/")
+		group = r.Group("/", needMotionUp)
 	}
 
 	for k, v := range handlersMap {
@@ -52,6 +53,16 @@ func Init() {
 
 func needMotionUp(c *gin.Context) {
 
+	/** Every request, except for /control* requests, need motion up and running**/
+
+	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/control") {
+		motionStarted := motion.IsStarted()
+
+		if !motionStarted {
+			c.JSON(http.StatusConflict, gin.H{"message": "motion was not started yet"})
+			return
+		}
+	}
 }
 
 func startHandler(c *gin.Context) {
