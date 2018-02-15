@@ -153,7 +153,7 @@ func TestParticularStartAndStop(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 6, ret["log_level"].(int))
 
-	err = ConfigSet("log_level", "5", false)
+	err = ConfigSet("log_level", "5")
 
 	require.NoError(t, err)
 
