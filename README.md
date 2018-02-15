@@ -1,6 +1,6 @@
 # motioncrtl
 
-motionctrl is a REST API written in Golang that acts as a controller/proxy for motion. It also can help you to build an IP camera and control it from any other third-part application.
+motionctrl is a REST API written in Golang that acts as a controller/proxy for [motion](https://github.com/Motion-Project/motion/). It also can help you to build an IP camera and control it from any other third-part application.
 
 __Why motionctrl?__
 
