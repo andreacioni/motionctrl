@@ -6,7 +6,7 @@ __Why motionctrl?__
 
 motionctlr allows you to:
 - start/stop motion through an easy REST api service
-- only one point to access both stream and webcontrol
+- provide only one point to access both stream and webcontrol
 - improve motion security with HTTPS
 - managing motion with JSON REST api that replace the old text webcontrol interface integrated in motion
 
