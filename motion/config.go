@@ -228,7 +228,7 @@ func ConfigCanSet(name string) bool {
 	return !b
 }
 
-func ConfigSet(name string, value string, writeback bool) error {
+func ConfigSet(name string, value string) error {
 	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
 	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
 		if !utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, name, value), body) {
@@ -241,9 +241,11 @@ func ConfigSet(name string, value string, writeback bool) error {
 	return err
 }
 
-func ConfigWrite() interface{} {
+func ConfigWrite() error {
 	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
-
+		if !utils.RegexMustMatch(DoneRegex, body) {
+			return nil, fmt.Errorf("unable to write config (%s)", body)
+		}
 		return nil, nil
 	})
 

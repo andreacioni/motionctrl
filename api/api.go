@@ -29,6 +29,7 @@ var handlersMap = map[string]func(*gin.Context){
 	"/config/list":      listConfigHandler,
 	"/config/set":       setConfigHandler,
 	"/config/get":       getConfigHandler,
+	"/config/write":     writeConfigHandler,
 }
 
 func Init() {
@@ -172,25 +173,52 @@ func getConfigHandler(c *gin.Context) {
 }
 
 func setConfigHandler(c *gin.Context) {
-	nameAndValue := utils.RegexSubmatchTypedMap("/config/set\\?("+motion.KeyValueRegex+"+)=("+motion.KeyValueRegex+"+)", fmt.Sprint(c.Request.URL), motion.ReverseConfigTypeMapper)
+	writeback, err := strconv.ParseBool(c.DefaultQuery("writeback", "false"))
 
-	if len(nameAndValue) != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
-	} else {
-		for k, v := range nameAndValue {
-			b := motion.ConfigCanSet(k)
-			if b {
-				err := motion.ConfigSet(k, v.(string), false)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+	if err != nil {
+		nameAndValue := utils.RegexSubmatchTypedMap("/config/set\\?("+motion.KeyValueRegex+"+)=("+motion.KeyValueRegex+"+)", fmt.Sprint(c.Request.URL), motion.ReverseConfigTypeMapper)
+
+		if len(nameAndValue) != 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
+		} else {
+			for k, v := range nameAndValue {
+				b := motion.ConfigCanSet(k)
+				if b {
+					err = motion.ConfigSet(k, v.(string))
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+					} else {
+
+						if writeback {
+							err = motion.ConfigWrite()
+							if err != nil {
+								c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+								return
+							}
+						}
+
+						c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
+
+					}
 				} else {
-					c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
+					c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("'%s' cannot be updated with %s", k, version.Name)})
 				}
-			} else {
-				c.JSON(http.StatusForbidden, gin.H{"message": fmt.Errorf("'%s' cannot be updated with %s", k, version.Name).Error()})
+
 			}
 
 		}
+	} else {
+		c.JSON(http.StatusBadGateway, gin.H{"message": "'writeback' parameter must be true/false"})
+	}
 
+}
+
+func writeConfigHandler(c *gin.Context) {
+	err := motion.ConfigWrite()
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "configuration written to file"})
 	}
 }
