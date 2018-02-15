@@ -44,12 +44,12 @@ List of all available API and their description. Return value is always a JSON c
 
 | Path | Description | Parameter | Return | Status Codes | 
 | ------------- | ------------- | ------------- | ------------- | ------------- |
-| /control/startup[?detection=(true\|false)] | Launch motion | **detection** parameter should be used to start motion with motion detection enabled at startup (default=__false__) | empty JSON object | **200**: motion started<br>**500**: there was an error on starting up motion |
-| /control/shutdown | Shutdown motion | no parameters | empty JSON object |  **200**: motion stopped<br>**500**: there was an error on stopping motion  |
-| /control/restart | Restart motion | no parameters | empty JSON object | **200**: motion restarted<br>**500**: there was an error on restarting motion
+| /control/startup[?detection=(true\|false)] | Launch motion | **detection** parameter should be used to start motion with motion detection enabled at startup (default=__false__) | JSON object | **200**: motion started<br>**500**: there was an error on starting up motion |
+| /control/shutdown | Shutdown motion | no parameters | JSON object |  **200**: motion stopped<br>**500**: there was an error on stopping motion  |
+| /control/restart | Restart motion | no parameters | JSON object | **200**: motion restarted<br>**500**: there was an error on restarting motion
 | /control/status | Report if motion is curretly running | no parameters  | **motionStarted**(bool): true if motion is running |  **200**: always |
-| /detection/start | Enable motion detection | no parameters  |  empty JSON object |  **200**: motion detection enabled<br>**500**: there was an error on enabling motion detection<br>**409**: motion is not started |
-| /detection/stop | Disable motion detection | no parameters  |  empty JSON object |  **200**: motion detection enabled<br>**500**: there was an error on enabling motion detection<br>**409**: motion is not started |
+| /detection/start | Enable motion detection | no parameters  |  JSON object |  **200**: motion detection enabled<br>**500**: there was an error on enabling motion detection<br>**409**: motion is not started |
+| /detection/stop | Disable motion detection | no parameters  |  JSON object |  **200**: motion detection enabled<br>**500**: there was an error on enabling motion detection<br>**409**: motion is not started |
 | /detection/status | Check if motion detection is enabled | no parameters |  **motionDetectionEnabled**(bool): true if motion detection is enabled|  **200**: if this checks succed<br>**500**: there was an error on checking motion detection enabled<br>**409**: motion is not started |
 | /config/list | List current motion configuration | no parameters | JSON object which attributes contain all motion configuration parameters |  **200**: configuration obtained without errors<br>**500**: there was an error on retrieving motion configuraition<br>**409**: motion is not started |
 | /config/get?query=\<param\> | Get a specific configuration | **query** parameter indicates requested configuration parameter | JSON object with only one attribute which name is \<param\> |  **200**: configuration obtained without errors<br>**400**: 'query' parameter is not specified<br>**500**: there was an error on retrieving motion configuraition<br>**409**: motion is not started |
