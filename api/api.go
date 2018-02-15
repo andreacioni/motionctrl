@@ -13,6 +13,7 @@ import (
 	"../config"
 	"../motion"
 	"../utils"
+	"../version"
 )
 
 var handlersMap = map[string]func(*gin.Context){
@@ -47,6 +48,10 @@ func Init() {
 	}
 
 	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
+}
+
+func needMotionUp(c *gin.Context) {
+
 }
 
 func startHandler(c *gin.Context) {
@@ -162,12 +167,18 @@ func setConfigHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "'name' and 'value' parameters not specified"})
 	} else {
 		for k, v := range nameAndValue {
-			err := motion.ConfigSet(k, v.(string))
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+			b := motion.ConfigCanSet(k)
+			if b {
+				err := motion.ConfigSet(k, v.(string), false)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
+				} else {
+					c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
+				}
 			} else {
-				c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
+				c.JSON(http.StatusForbidden, gin.H{"message": fmt.Errorf("'%s' cannot be updated with %s", k, version.Name).Error()})
 			}
+
 		}
 
 	}

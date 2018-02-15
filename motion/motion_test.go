@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"../utils"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfigParser(t *testing.T) {
@@ -98,10 +98,10 @@ func TestConfigTypeMapper(t *testing.T) {
 		"value4": "3",
 	}
 
-	assert.Equal(t, "text", ConfigTypeMapper(testMap["value1"]))
-	assert.Equal(t, false, ConfigTypeMapper(testMap["value2"]))
-	assert.Equal(t, true, ConfigTypeMapper(testMap["value3"]))
-	assert.Equal(t, 3, ConfigTypeMapper(testMap["value4"]))
+	require.Equal(t, "text", ConfigTypeMapper(testMap["value1"]))
+	require.Equal(t, false, ConfigTypeMapper(testMap["value2"]))
+	require.Equal(t, true, ConfigTypeMapper(testMap["value3"]))
+	require.Equal(t, 3, ConfigTypeMapper(testMap["value4"]))
 }
 
 func TestRegexConfigFileParser(t *testing.T) {
@@ -109,12 +109,12 @@ func TestRegexConfigFileParser(t *testing.T) {
 
 	testMap := utils.RegexSubmatchTypedMap(ConfigDefaultParserRegex, testString, ConfigTypeMapper)
 
-	assert.Equal(t, 4, len(testMap))
-	assert.Equal(t, 12, testMap["hello"])
-	assert.Equal(t, 11, testMap["word"])
-	assert.Empty(t, testMap["nullparam"])
-	assert.Equal(t, true, testMap["onoff"])
-	assert.Equal(t, false, testMap["offon"])
+	require.Equal(t, 4, len(testMap))
+	require.Equal(t, 12, testMap["hello"])
+	require.Equal(t, 11, testMap["word"])
+	require.Empty(t, testMap["nullparam"])
+	require.Equal(t, true, testMap["onoff"])
+	require.Equal(t, false, testMap["offon"])
 }
 
 func TestRegexConfigList(t *testing.T) {
@@ -122,21 +122,45 @@ func TestRegexConfigList(t *testing.T) {
 
 	testMap := utils.RegexSubmatchTypedMap(ListConfigParserRegex, testString, ConfigTypeMapper)
 
-	assert.Equal(t, 4, len(testMap))
-	assert.Equal(t, 12, testMap["hello"])
-	assert.Equal(t, 11, testMap["word"])
-	assert.Empty(t, testMap["nullparam"])
-	assert.Equal(t, true, testMap["onoff"])
-	assert.Equal(t, false, testMap["offon"])
+	require.Equal(t, 4, len(testMap))
+	require.Equal(t, 12, testMap["hello"])
+	require.Equal(t, 11, testMap["word"])
+	require.Empty(t, testMap["nullparam"])
+	require.Equal(t, true, testMap["onoff"])
+	require.Equal(t, false, testMap["offon"])
 }
 
 func TestRegexSetRegex(t *testing.T) {
 	testString := "testparam = Hello\nDone"
 	testURL := "/config/set?daemon=true"
 
-	assert.True(t, utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, "testparam", "Hello"), testString))
+	require.True(t, utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, "testparam", "Hello"), testString))
 
 	mapped := utils.RegexSubmatchTypedMap("/config/set\\?("+KeyValueRegex+"+)=("+KeyValueRegex+"+)", testURL, nil)
-	assert.Equal(t, 1, len(mapped))
+	require.Equal(t, 1, len(mapped))
 
+}
+
+func TestParticularStartAndStop(t *testing.T) {
+	Init("./motion_test.conf")
+
+	require.NoError(t, Startup(false))
+
+	require.True(t, IsStarted())
+
+	ret, err := ConfigGet("log_level")
+
+	require.NoError(t, err)
+	require.Equal(t, 6, ret["log_level"].(int))
+
+	err = ConfigSet("log_level", "5", false)
+
+	require.NoError(t, err)
+
+	ret, err = ConfigGet("log_level")
+
+	require.NoError(t, err)
+	require.Equal(t, 5, ret["log_level"].(int))
+
+	require.NoError(t, Shutdown())
 }

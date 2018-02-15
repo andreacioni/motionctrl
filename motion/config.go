@@ -11,6 +11,44 @@ import (
 	"../version"
 )
 
+const (
+	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
+	ConfigDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
+	ListConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
+	GetConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
+	SetConfigParserRegex     = "%s = %s\nDone"
+	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
+	DoneRegex                = "\nDone"
+)
+
+const (
+	Daemon                   = "daemon"
+	SetupMode                = "setup_mode"
+	WebControlPort           = "webcontrol_port"
+	StreamPort               = "stream_port"
+	StreamAuthMethod         = "stream_auth_method"
+	StreamAuthentication     = "stream_authentication"
+	WebControlHTML           = "webcontrol_html_output"
+	WebControlParms          = "webcontrol_parms"
+	WebControlAuthentication = "webcontrol_authentication"
+	ProcessIdFile            = "process_id_file"
+)
+
+var (
+	ConfigReadOnlyParams = []string{Daemon,
+		SetupMode,
+		WebControlPort,
+		StreamPort,
+		StreamAuthMethod,
+		StreamAuthentication,
+		WebControlHTML,
+		WebControlParms,
+		WebControlAuthentication,
+		ProcessIdFile,
+	}
+	motionConfMap map[string]string
+)
+
 var ConfigTypeMapper = func(s string) interface{} {
 
 	integer, err := strconv.Atoi(s)
@@ -54,31 +92,6 @@ var ReverseConfigTypeMapper = func(s string) interface{} {
 		return s
 	}
 }
-
-const (
-	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
-	ConfigDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
-	ListConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
-	GetConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
-	SetConfigParserRegex     = "%s = %s\nDone"
-	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
-	DoneRegex                = "\nDone"
-)
-
-const (
-	WebControlPort           = "webcontrol_port"
-	StreamPort               = "stream_port"
-	StreamAuthMethod         = "stream_auth_method"
-	StreamAuthentication     = "stream_authentication"
-	WebControlHTML           = "webcontrol_html_output"
-	WebControlParms          = "webcontrol_parms"
-	WebControlAuthentication = "webcontrol_authentication"
-	ProcessIdFile            = "process_id_file"
-)
-
-var (
-	motionConfMap map[string]string
-)
 
 func Load(filename string) error {
 
@@ -209,7 +222,13 @@ func ConfigGet(param string) (map[string]interface{}, error) {
 
 }
 
-func ConfigSet(name string, value string) error {
+func ConfigCanSet(name string) bool {
+	b, _ := utils.InSlice(name, ConfigReadOnlyParams)
+
+	return !b
+}
+
+func ConfigSet(name string, value string, writeback bool) error {
 	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
 	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
 		if !utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, name, value), body) {
@@ -222,6 +241,11 @@ func ConfigSet(name string, value string) error {
 	return err
 }
 
-func ConfigTypeMap(s string) interface{} {
-	return nil
+func ConfigWrite() interface{} {
+	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
+
+		return nil, nil
+	})
+
+	return err
 }
