@@ -217,7 +217,7 @@ func writeConfigHandler(c *gin.Context) {
 	err := motion.ConfigWrite()
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "configuration written to file"})
 	}
