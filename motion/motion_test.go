@@ -148,7 +148,7 @@ func TestParticularStartAndStop(t *testing.T) {
 
 	require.True(t, IsStarted())
 
-	ret, err := ConfigGet("log_level")
+	ret, err := ConfigGet("log_level") //Changing daemon instead of 'log_level' cause Shutdown to fail
 
 	require.NoError(t, err)
 	require.Equal(t, 6, ret["log_level"].(int))

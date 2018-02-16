@@ -120,7 +120,7 @@ func isMotionDetectionEnabled(c *gin.Context) {
 }
 
 func startDetectionHandler(c *gin.Context) {
-	err := motion.EnableMotionDetection(true)
+	err := motion.EnableMotionDetection()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -130,7 +130,7 @@ func startDetectionHandler(c *gin.Context) {
 }
 
 func stopDetectionHandler(c *gin.Context) {
-	err := motion.EnableMotionDetection(false)
+	err := motion.DisableMotionDetection()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

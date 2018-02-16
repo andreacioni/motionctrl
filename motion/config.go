@@ -13,12 +13,11 @@ import (
 
 const (
 	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
+	ConfigWriteRegex         = "Camera [0-9]+ write\nDone\n"
 	ConfigDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
 	ListConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
 	GetConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
 	SetConfigParserRegex     = "%s = %s\nDone"
-	DetectionStatusRegex     = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
-	DoneRegex                = "\nDone"
 )
 
 const (
@@ -243,7 +242,7 @@ func ConfigSet(name string, value string) error {
 
 func ConfigWrite() error {
 	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
-		if !utils.RegexMustMatch(DoneRegex, body) {
+		if !utils.RegexMustMatch(ConfigWriteRegex, body) {
 			return nil, fmt.Errorf("unable to write config (%s)", body)
 		}
 		return nil, nil

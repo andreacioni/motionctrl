@@ -13,7 +13,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-func Init(configFile string) {
+func Init(configFile string, autostart bool, detection bool) {
 
 	err := CheckInstall()
 
@@ -49,10 +49,14 @@ func Init(configFile string) {
 
 	motionConfigFile = configFile
 
-	//if autostart {
-	//glg.Infof("Starting motion")
-	//TODO
-	//}
+	if autostart {
+		glg.Infof("Starting motion")
+		err = Startup(detection)
+
+		if err != nil {
+			glg.Fatalf("Unable to startup motion (%s)", err)
+		}
+	}
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error
@@ -76,12 +80,13 @@ func Startup(motionDetectionStartup bool) error {
 	glg.Debugf("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
 	if !started {
-		startMotion(motionDetectionStartup)
+		err = startMotion(motionDetectionStartup)
+		if err == nil {
+			started = true
+		}
 	} else {
 		glg.Warn("motion is already started")
 	}
-
-	started = true
 
 	return err
 }

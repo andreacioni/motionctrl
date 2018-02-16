@@ -3,8 +3,15 @@ package motion
 import (
 	"fmt"
 
-	"../config"
 	"../utils"
+)
+
+const (
+	DetectionStatusRegex  = "Camera [0-9]+ Detection status (ACTIVE|PAUSE)"
+	DetectionResumedRegex = "Camera [0-9]+ Detection resumed\nDone\n"
+	DetectionPausedRegex  = "Camera [0-9]+ Detection paused\nDone\n"
+	DetectionActiveRegex  = "Camera [0-9]+ Detection status ACTIVE"
+	DetectionPauseRegex   = "Camera [0-9]+ Detection status PAUSE"
 )
 
 func IsMotionDetectionEnabled() (bool, error) {
@@ -26,17 +33,23 @@ func IsMotionDetectionEnabled() (bool, error) {
 	return ret.(bool), err
 }
 
-func EnableMotionDetection(enable bool) error { //TODO check for motion is running
-	path := ""
-	if enable {
-		path = fmt.Sprintf(GetBaseURL()+"/detection/start", config.BaseAddress, motionConfMap[WebControlPort])
-	} else {
-		path = fmt.Sprintf(GetBaseURL()+"/detection/pause", config.BaseAddress, motionConfMap[WebControlPort])
-	}
+func EnableMotionDetection() error {
 
-	_, err := webControlGet(path, func(body string) (interface{}, error) {
-		if utils.RegexMustMatch(DoneRegex, body) {
+	_, err := webControlGet("/detection/start", func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(DetectionResumedRegex, body) {
 			return nil, fmt.Errorf("unable to enable motion detection (%s)", body)
+		}
+		return nil, nil
+	})
+
+	return err
+}
+
+func DisableMotionDetection() error {
+
+	_, err := webControlGet("/detection/pause", func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(DetectionPausedRegex, body) {
+			return nil, fmt.Errorf("unable to disable motion detection (%s)", body)
 		}
 		return nil, nil
 	})
