@@ -4,11 +4,6 @@ go:
   - 1.9.x
 
 before_install:
-  - cd arcd
-install:
-  - make deps
+  - curl https://gist.githubusercontent.com/andreacioni/bbfde655dc62d4f6f3e2b6fb82c248b9/raw/d361ae8b856c93516fb76b424fe02f3079de41fa/install_motion.sh | sh
 
 go_import_path: github.com/andreacioni/motionctrl
-
-script:
-- make test
