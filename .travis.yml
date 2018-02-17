@@ -14,7 +14,7 @@ before_install:
   - autoreconf -fiv
   - ./configure
   - make
-  - make install
+  - sudo make install
   - rm -rf motion-master
 
 go_import_path: github.com/andreacioni/motionctrl
