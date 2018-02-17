@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"../config"
+	"github.com/andreacioni/motionctrl/config"
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
 )
