@@ -127,7 +127,7 @@ func Restart() error {
 		}
 
 	} else {
-		glg.Warn("motion is not started")
+		err = fmt.Errorf("motion is not running")
 	}
 
 	return err
