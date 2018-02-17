@@ -9,8 +9,14 @@ motionctlr allows you to:
 - provide only one point to access both stream and webcontrol
 - improve motion security with HTTPS
 - managing motion with JSON REST api that replace the old text webcontrol interface integrated in motion
+- backup old image/video in Google Drive* (TODO)
+- notify event through Telegram* to every device you want (TODO)
+
+*: more backup and notify services could be implemented easily, take a look inside backup/ notify/ folders!
 
 __Download__
+
+Download instruction
 
 __Configuration__
 

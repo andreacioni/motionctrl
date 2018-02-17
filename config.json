@@ -9,5 +9,22 @@
     "ssl" : {
         "key" : "/path/to/key.key",
         "cert" : "/path/to/cert.pem"
-    }
+    },
+
+    "backup" : [
+        {
+            "when" : "",
+            "method" : "google",
+            "key" : "",
+            "token" : "",
+            "removeLocalCopy":true
+        }
+    ],
+
+    "notify" : [
+        {
+            "method" : "telegram",
+            "token" : ""
+        }
+    ]
 }
