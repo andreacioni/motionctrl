@@ -4,7 +4,7 @@ go:
   - 1.9.x
 
 before_install:
-  - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev checkinstall
+  - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev
   - sudo apt-get install libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev
   - sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
   - sudo apt-get install libwebp-dev
