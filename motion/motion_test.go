@@ -45,7 +45,7 @@ func TestCheckInstall(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
-	Init("./motion_test.conf")
+	Init("./motion_test.conf", false, false)
 
 	err := Startup(false)
 
@@ -66,7 +66,7 @@ func TestStartStop(t *testing.T) {
 
 func TestRestart(t *testing.T) {
 
-	Init("./motion_test.conf")
+	Init("./motion_test.conf", false, false)
 
 	err := Startup(false)
 
@@ -143,7 +143,7 @@ func TestRegexSetRegex(t *testing.T) {
 }
 
 func TestParticularStartAndStop(t *testing.T) {
-	Init("./motion_test.conf")
+	Init("./motion_test.conf", false, false)
 
 	require.NoError(t, Startup(false))
 

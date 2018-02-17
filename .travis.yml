@@ -1,17 +1,14 @@
 language: go
-sudo: false
+sudo: true
 go:
   - 1.9.x
-
-git:
-  depth: 3
 
 before_install:
   - cd arcd
 install:
   - make deps
 
-go_import_path: github.com/evilsocket/arc
+go_import_path: github.com/andreacioni/motionctrl
 
 script:
 - make test
