@@ -4,7 +4,17 @@ go:
   - 1.9.x
 
 before_install:
-  - cd /tmp
-  - curl https://gist.githubusercontent.com/andreacioni/bbfde655dc62d4f6f3e2b6fb82c248b9/raw/d361ae8b856c93516fb76b424fe02f3079de41fa/install_motion.sh | sh
+  - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev checkinstall
+  - sudo apt-get install libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev
+  - sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
+  - sudo apt-get install libwebp-dev
+  - wget https://github.com/Motion-Project/motion/archive/master.zip
+  - unzip master.zip
+  - cd motion-master
+  - autoreconf -fiv
+  - ./configure
+  - make
+  - make install
+  - rm -rf motion-master
 
 go_import_path: github.com/andreacioni/motionctrl
