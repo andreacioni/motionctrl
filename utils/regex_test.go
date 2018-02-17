@@ -3,6 +3,8 @@ package utils
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,13 +16,10 @@ func TestRegexMustMatch(t *testing.T) {
 }
 
 func TestRegexFirstSubmatchString(t *testing.T) {
-	if RegexFirstSubmatchString("Camera [0-9]+ Detection status (ACTIVE|PAUSE)", "Camera 0 Detection status ACTIVE") != "ACTIVE" {
-		t.Error("not match")
-	}
+	require.Equal(t, RegexFirstSubmatchString("Camera [0-9]+ Detection status (ACTIVE|PAUSE)", "Camera 0 Detection status ACTIVE"), "ACTIVE")
 
-	if RegexFirstSubmatchString("Camera [0-9]+ Detection status (ACTIVE|PAUSE)", "Camera 0 Detection status PAUSE") != "PAUSE" {
-		t.Error("not match")
-	}
+	require.Equal(t, RegexFirstSubmatchString("Camera [0-9]+ Detection status (ACTIVE|PAUSE)", "Camera 0 Detection status PAUSE"), "PAUSE")
+
 }
 
 func TestRegexConfigList(t *testing.T) {

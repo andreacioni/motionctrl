@@ -26,7 +26,7 @@ func IsMotionDetectionEnabled() (bool, error) {
 		}
 	})
 
-	if ret != nil {
+	if err != nil {
 		return false, err
 	}
 
