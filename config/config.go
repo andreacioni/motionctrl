@@ -12,11 +12,26 @@ const (
 )
 
 type Configuration struct {
-	Address          string `json:"address"`
-	Port             int    `json:"port"`
-	MotionConfigFile string `json:"motionConfigFile"`
-	Username         string `json:"username"`
-	Password         string `json:"password"`
+	Address          string   `json:"address"`
+	Port             int      `json:"port"`
+	MotionConfigFile string   `json:"motionConfigFile"`
+	Username         string   `json:"username"`
+	Password         string   `json:"password"`
+	Backup           []Backup `json:"backup"`
+	Notify           []Notify `json:"notify"`
+}
+
+type Backup struct {
+	When          string `json:"when"`
+	Method        string `json:"method"`
+	Key           string `json:"key"`
+	Token         string `json:"token"`
+	KeepLocalCopy bool   `json:"keepLocalCopy"`
+}
+
+type Notify struct {
+	Method string `json:"method"`
+	Token  string `json:"token"`
 }
 
 var conf Configuration

@@ -14,10 +14,10 @@
     "backup" : [
         {
             "when" : "",
-            "method" : "google",
+            "method" : "gdrive",
             "key" : "",
             "token" : "",
-            "removeLocalCopy":true
+            "keepLocalCopy":false
         }
     ],
 
