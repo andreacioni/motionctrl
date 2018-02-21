@@ -66,11 +66,11 @@ func Init(configFile string, autostart bool, detection bool) {
 }
 
 func GetStreamBaseURL() string {
-	return fmt.Sprintf("http://%s:%s", config.BaseAddress, motionConfMap[StreamPort])
+	return fmt.Sprintf("http://%s:%s", config.BaseAddress, readOnlyConfig[ConfigStreamPort])
 }
 
 func GetBaseURL() string {
-	return fmt.Sprintf("http://%s:%s/0", config.BaseAddress, motionConfMap[WebControlPort])
+	return fmt.Sprintf("http://%s:%s/0", config.BaseAddress, readOnlyConfig[ConfigWebControlPort])
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error

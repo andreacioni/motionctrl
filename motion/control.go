@@ -80,7 +80,7 @@ func IsStarted() bool {
 }
 
 func readPid() (int, error) {
-	raw, err := ioutil.ReadFile(motionConfMap[ProcessIdFile])
+	raw, err := ioutil.ReadFile(readOnlyConfig[ConfigProcessIdFile])
 
 	if err != nil {
 		return 0, err
@@ -126,7 +126,7 @@ func stopMotion() error {
 
 func waitDie() error {
 	i, secs := 0, 15
-	for _, err := os.Stat(motionConfMap[ProcessIdFile]); err == nil && i < secs; _, err = os.Stat(motionConfMap[ProcessIdFile]) {
+	for _, err := os.Stat(readOnlyConfig[ConfigProcessIdFile]); err == nil && i < secs; _, err = os.Stat(readOnlyConfig[ConfigProcessIdFile]) {
 		glg.Debugf("Waiting motion exits (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++

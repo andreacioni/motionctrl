@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
+	KeyValueRegex = "[a-zA-Z0-9_%\\/-]"
+
 	configWriteRegex         = "Camera [0-9]+ write\nDone\n"
 	configDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
 	listConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
@@ -21,33 +22,33 @@ const (
 )
 
 const (
-	Daemon                   = "daemon"
-	SetupMode                = "setup_mode"
-	WebControlPort           = "webcontrol_port"
-	StreamPort               = "stream_port"
-	StreamAuthMethod         = "stream_auth_method"
-	StreamAuthentication     = "stream_authentication"
-	WebControlHTML           = "webcontrol_html_output"
-	WebControlParms          = "webcontrol_parms"
-	WebControlAuthentication = "webcontrol_authentication"
-	ProcessIdFile            = "process_id_file"
-	TargetDir                = "target_dir"
+	ConfigDaemon                   = "daemon"
+	ConfigSetupMode                = "setup_mode"
+	ConfigWebControlPort           = "webcontrol_port"
+	ConfigStreamPort               = "stream_port"
+	ConfigStreamAuthMethod         = "stream_auth_method"
+	ConfigStreamAuthentication     = "stream_authentication"
+	ConfigWebControlHTML           = "webcontrol_html_output"
+	ConfigWebControlParms          = "webcontrol_parms"
+	ConfigWebControlAuthentication = "webcontrol_authentication"
+	ConfigProcessIdFile            = "process_id_file"
+	ConfigTargetDir                = "target_dir"
 )
 
 var (
-	configReadOnlyParams = []string{Daemon,
-		SetupMode,
-		WebControlPort,
-		StreamPort,
-		StreamAuthMethod,
-		StreamAuthentication,
-		WebControlHTML,
-		WebControlParms,
-		WebControlAuthentication,
-		ProcessIdFile,
-		TargetDir,
+	configReadOnlyParams = []string{ConfigDaemon,
+		ConfigSetupMode,
+		ConfigWebControlPort,
+		ConfigStreamPort,
+		ConfigStreamAuthMethod,
+		ConfigStreamAuthentication,
+		ConfigWebControlHTML,
+		ConfigWebControlParms,
+		ConfigWebControlAuthentication,
+		ConfigProcessIdFile,
+		ConfigTargetDir,
 	}
-	motionConfMap map[string]string
+	readOnlyConfig map[string]string
 )
 
 var ConfigTypeMapper = func(s string) interface{} {
@@ -102,7 +103,7 @@ func loadConfig(filename string) error {
 		err = checkConfig(temp)
 
 		if err == nil {
-			motionConfMap = temp
+			readOnlyConfig = temp
 		}
 	}
 
@@ -110,58 +111,58 @@ func loadConfig(filename string) error {
 }
 
 func checkConfig(configMap map[string]string) error {
-	webControlPort := configMap[WebControlPort]
+	webControlPort := configMap[ConfigWebControlPort]
 
 	if webControlPort == "" {
-		return fmt.Errorf("missing %s", WebControlPort)
+		return fmt.Errorf("missing %s", ConfigWebControlPort)
 	}
 
-	streamPort := configMap[StreamPort]
+	streamPort := configMap[ConfigStreamPort]
 
 	if streamPort == "" {
-		return fmt.Errorf("'%s' parameter not found", StreamPort)
+		return fmt.Errorf("'%s' parameter not found", ConfigStreamPort)
 	}
 
-	webControlHTML := configMap[WebControlHTML]
+	webControlHTML := configMap[ConfigWebControlHTML]
 
 	if webControlHTML == "" || webControlHTML == "on" {
-		return fmt.Errorf("'%s' parameter not found or set to 'on' (must be 'off')", WebControlHTML)
+		return fmt.Errorf("'%s' parameter not found or set to 'on' (must be 'off')", ConfigWebControlHTML)
 	}
 
-	webControlParms := configMap[WebControlParms]
+	webControlParms := configMap[ConfigWebControlParms]
 
 	if webControlParms == "" || webControlParms != "2" {
 		return fmt.Errorf("web control authentication is enabled in motion config, please disable it (set to '2'). %s already has login features to protect your camera", version.Name)
 	}
 
-	webControlAuth := configMap[WebControlAuthentication]
+	webControlAuth := configMap[ConfigWebControlAuthentication]
 
 	if webControlAuth != "" {
-		return fmt.Errorf("'%s' parameter need to be commented in motion config", WebControlAuthentication)
+		return fmt.Errorf("'%s' parameter need to be commented in motion config", ConfigWebControlAuthentication)
 	}
 
-	streamAuthMethod := configMap[StreamAuthMethod]
+	streamAuthMethod := configMap[ConfigStreamAuthMethod]
 
 	if streamAuthMethod != "0" {
 		return fmt.Errorf("stream authentication is enabled in motion config, please disable it, %s already has login features to protect your camera", version.Name)
 	}
 
-	streamAuth := configMap[StreamAuthentication]
+	streamAuth := configMap[ConfigStreamAuthentication]
 
 	if streamAuth != "" {
-		return fmt.Errorf("'%s' parameter need to be commented in motion config", StreamAuthentication)
+		return fmt.Errorf("'%s' parameter need to be commented in motion config", ConfigStreamAuthentication)
 	}
 
-	pidFile := configMap[ProcessIdFile]
+	pidFile := configMap[ConfigProcessIdFile]
 
 	if pidFile == "" {
-		return fmt.Errorf("'%s' parameter not found", StreamAuthentication)
+		return fmt.Errorf("'%s' parameter not found", ConfigStreamAuthentication)
 	}
 
-	targetDir := configMap[TargetDir]
+	targetDir := configMap[ConfigTargetDir]
 
 	if targetDir == "" {
-		return fmt.Errorf("'%s' parameter not found", targetDir)
+		return fmt.Errorf("'%s' parameter not found", ConfigTargetDir)
 	}
 
 	return nil
@@ -208,6 +209,10 @@ func ConfigList() (map[string]interface{}, error) {
 	}
 
 	return ret.(map[string]interface{}), nil
+}
+
+func ConfigGetRO(param string) string {
+	return readOnlyConfig[param]
 }
 
 func ConfigGet(param string) (map[string]interface{}, error) {
