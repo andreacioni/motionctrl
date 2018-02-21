@@ -143,7 +143,7 @@ func TestRegexSetRegex(t *testing.T) {
 }
 
 func TestParticularStartAndStop(t *testing.T) {
-	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
+	Init("motion_test.conf", false, false)
 
 	require.NoError(t, Startup(false))
 
@@ -167,6 +167,6 @@ func TestParticularStartAndStop(t *testing.T) {
 }
 
 func TestSomeConfigs(t *testing.T) {
-	conf, err = parseConfig("motion_test.conf")
-	require.Equals(t, "/tmp", conf[TargetDir])
+	conf, _ := parseConfig("motion_test.conf")
+	require.Equal(t, "/tmp", conf[ConfigTargetDir])
 }
