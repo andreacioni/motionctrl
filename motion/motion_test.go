@@ -165,3 +165,8 @@ func TestParticularStartAndStop(t *testing.T) {
 
 	require.NoError(t, Shutdown())
 }
+
+func TestSomeConfigs(t *testing.T) {
+	conf, err = Parse("motion_test.conf")
+	require.Equals(t, "/tmp", conf[TargetDir])
+}

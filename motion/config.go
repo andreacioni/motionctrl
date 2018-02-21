@@ -31,6 +31,7 @@ const (
 	WebControlParms          = "webcontrol_parms"
 	WebControlAuthentication = "webcontrol_authentication"
 	ProcessIdFile            = "process_id_file"
+	TargetDir                = "target_dir"
 )
 
 var (
@@ -44,6 +45,7 @@ var (
 		WebControlParms,
 		WebControlAuthentication,
 		ProcessIdFile,
+		TargetDir,
 	}
 	motionConfMap map[string]string
 )
@@ -154,6 +156,12 @@ func Check(configMap map[string]string) error {
 
 	if pidFile == "" {
 		return fmt.Errorf("'%s' parameter not found", StreamAuthentication)
+	}
+
+	targetDir := configMap[TargetDir]
+
+	if targetDir == "" {
+		return fmt.Errorf("'%s' parameter not found", targetDir)
 	}
 
 	return nil
