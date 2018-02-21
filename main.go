@@ -6,10 +6,10 @@ import (
 
 	"github.com/kpango/glg"
 
-	"./api"
-	"./config"
-	"./motion"
-	"./version"
+	"github.com/andreacioni/motionctrl/api"
+	"github.com/andreacioni/motionctrl/config"
+	"github.com/andreacioni/motionctrl/motion"
+	"github.com/andreacioni/motionctrl/version"
 )
 
 var (
@@ -22,14 +22,19 @@ var (
 func main() {
 	fmt.Printf("%s is starting (version: %s build: %d)\n", version.Name, version.Number, version.Build)
 
+	//Parse command line arguments
 	parseArgs()
 
+	//Setup logger
 	setupLogger()
 
+	//Load motionctrl configuration file
 	config.Load(configFile)
 
+	//Initialize motion package
 	motion.Init(config.Get().MotionConfigFile, autostart, detection)
 
+	//Initialize REST api
 	api.Init()
 }
 
@@ -38,7 +43,7 @@ func setupLogger() {
 }
 
 func parseArgs() {
-	flag.StringVar(&configFile, "c", "./config.json", "configuration file path")
+	flag.StringVar(&configFile, "c", "github.com/andreacioni/motionctrl/config.json", "configuration file path")
 	flag.StringVar(&logLevel, "l", "WARN", "set log level")
 	flag.BoolVar(&autostart, "a", false, fmt.Sprintf("start motion right after %s", version.Name))
 	flag.BoolVar(&detection, "d", false, "when -a is set, starts with motion detection enabled")

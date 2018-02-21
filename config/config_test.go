@@ -3,5 +3,5 @@ package config
 import "testing"
 
 func TestConfig(t *testing.T) {
-	Load("../config.json")
+	Load("github.com/andreacioni/motionctrl/config.json")
 }

@@ -7,17 +7,17 @@ import (
 	"strconv"
 	"strings"
 
-	"../utils"
-	"../version"
+	"github.com/andreacioni/motionctrl/utils"
+	"github.com/andreacioni/motionctrl/version"
 )
 
 const (
 	KeyValueRegex            = "[a-zA-Z0-9_%\\/-]"
-	ConfigWriteRegex         = "Camera [0-9]+ write\nDone\n"
-	ConfigDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
-	ListConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
-	GetConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
-	SetConfigParserRegex     = "%s = %s\nDone"
+	configWriteRegex         = "Camera [0-9]+ write\nDone\n"
+	configDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
+	listConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
+	getConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
+	setConfigParserRegex     = "%s = %s\nDone"
 )
 
 const (
@@ -35,7 +35,7 @@ const (
 )
 
 var (
-	ConfigReadOnlyParams = []string{Daemon,
+	configReadOnlyParams = []string{Daemon,
 		SetupMode,
 		WebControlPort,
 		StreamPort,
@@ -94,12 +94,12 @@ var ReverseConfigTypeMapper = func(s string) interface{} {
 	}
 }
 
-func Load(filename string) error {
+func loadConfig(filename string) error {
 
-	temp, err := Parse(filename)
+	temp, err := parseConfig(filename)
 
 	if err == nil {
-		err = Check(temp)
+		err = checkConfig(temp)
 
 		if err == nil {
 			motionConfMap = temp
@@ -109,7 +109,7 @@ func Load(filename string) error {
 	return err
 }
 
-func Check(configMap map[string]string) error {
+func checkConfig(configMap map[string]string) error {
 	webControlPort := configMap[WebControlPort]
 
 	if webControlPort == "" {
@@ -168,7 +168,7 @@ func Check(configMap map[string]string) error {
 }
 
 //TODO improve with regexp
-func Parse(configFile string) (map[string]string, error) {
+func parseConfig(configFile string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	file, err := os.Open(configFile)
@@ -195,7 +195,7 @@ func Parse(configFile string) (map[string]string, error) {
 
 func ConfigList() (map[string]interface{}, error) {
 	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchTypedMap(ListConfigParserRegex, body, ConfigTypeMapper)
+		ret := utils.RegexSubmatchTypedMap(listConfigParserRegex, body, ConfigTypeMapper)
 
 		if len(ret) == 0 {
 			return nil, fmt.Errorf("empty configuration")
@@ -213,7 +213,7 @@ func ConfigList() (map[string]interface{}, error) {
 func ConfigGet(param string) (map[string]interface{}, error) {
 	queryURL := fmt.Sprintf("/config/get?query=%s", param)
 	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchTypedMap(GetConfigParserRegex, body, ConfigTypeMapper)
+		ret := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
 
 		if len(ret) == 0 {
 			return nil, fmt.Errorf("invalid query (%s)", body)
@@ -230,15 +230,14 @@ func ConfigGet(param string) (map[string]interface{}, error) {
 }
 
 func ConfigCanSet(name string) bool {
-	b, _ := utils.InSlice(name, ConfigReadOnlyParams)
-
+	b, _ := utils.InSlice(name, configReadOnlyParams)
 	return !b
 }
 
 func ConfigSet(name string, value string) error {
 	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
 	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		if !utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, name, value), body) {
+		if !utils.RegexMustMatch(fmt.Sprintf(setConfigParserRegex, name, value), body) {
 			return nil, fmt.Errorf("there was an error on setting '%s' parameter", name)
 		}
 
@@ -250,7 +249,7 @@ func ConfigSet(name string, value string) error {
 
 func ConfigWrite() error {
 	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
-		if !utils.RegexMustMatch(ConfigWriteRegex, body) {
+		if !utils.RegexMustMatch(configWriteRegex, body) {
 			return nil, fmt.Errorf("unable to write config (%s)", body)
 		}
 		return nil, nil

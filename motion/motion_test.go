@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"testing"
 
-	"../utils"
+	"github.com/andreacioni/motionctrl/utils"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestConfigParser(t *testing.T) {
-	Parse("motion_test.conf")
+	parseConfig("motion_test.conf")
 }
 
 func TestNotPresentParser(t *testing.T) {
-	configMap, _ := Parse("motion_test.conf")
+	configMap, _ := parseConfig("motion_test.conf")
 
 	value := configMap["this_is_not_present"]
 
@@ -24,8 +24,8 @@ func TestNotPresentParser(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	configMap, _ := Parse("motion_test.conf")
-	err := Check(configMap)
+	configMap, _ := parseConfig("motion_test.conf")
+	err := checkConfig(configMap)
 
 	if err != nil {
 		t.Error(err)
@@ -37,7 +37,7 @@ func TestCheck(t *testing.T) {
 }
 
 func TestCheckInstall(t *testing.T) {
-	err := CheckInstall()
+	err := checkInstall()
 
 	if err != nil {
 		t.Error(err)
@@ -45,7 +45,7 @@ func TestCheckInstall(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
-	Init("./motion_test.conf", false, false)
+	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
 
 	err := Startup(false)
 
@@ -66,7 +66,7 @@ func TestStartStop(t *testing.T) {
 
 func TestRestart(t *testing.T) {
 
-	Init("./motion_test.conf", false, false)
+	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
 
 	err := Startup(false)
 
@@ -108,7 +108,7 @@ func TestConfigTypeMapper(t *testing.T) {
 func TestRegexConfigFileParser(t *testing.T) {
 	testString := "#comment here\n;comment here\nhello 12\nword 11\nnullparam (null)\nonoff on\noffon off"
 
-	testMap := utils.RegexSubmatchTypedMap(ConfigDefaultParserRegex, testString, ConfigTypeMapper)
+	testMap := utils.RegexSubmatchTypedMap(configDefaultParserRegex, testString, ConfigTypeMapper)
 
 	require.Equal(t, 4, len(testMap))
 	require.Equal(t, 12, testMap["hello"])
@@ -121,7 +121,7 @@ func TestRegexConfigFileParser(t *testing.T) {
 func TestRegexConfigList(t *testing.T) {
 	testString := "#comment = here\n;comment = here\nhello = 12\nword = 11\nnullparam = (null)\nonoff = on\noffon = off"
 
-	testMap := utils.RegexSubmatchTypedMap(ListConfigParserRegex, testString, ConfigTypeMapper)
+	testMap := utils.RegexSubmatchTypedMap(listConfigParserRegex, testString, ConfigTypeMapper)
 
 	require.Equal(t, 4, len(testMap))
 	require.Equal(t, 12, testMap["hello"])
@@ -135,7 +135,7 @@ func TestRegexSetRegex(t *testing.T) {
 	testString := "testparam = Hello\nDone"
 	testURL := "/config/set?daemon=true"
 
-	require.True(t, utils.RegexMustMatch(fmt.Sprintf(SetConfigParserRegex, "testparam", "Hello"), testString))
+	require.True(t, utils.RegexMustMatch(fmt.Sprintf(setConfigParserRegex, "testparam", "Hello"), testString))
 
 	mapped := utils.RegexSubmatchTypedMap("/config/set\\?("+KeyValueRegex+"+)=("+KeyValueRegex+"+)", testURL, nil)
 	require.Equal(t, 1, len(mapped))
@@ -143,7 +143,7 @@ func TestRegexSetRegex(t *testing.T) {
 }
 
 func TestParticularStartAndStop(t *testing.T) {
-	Init("./motion_test.conf", false, false)
+	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
 
 	require.NoError(t, Startup(false))
 
@@ -167,6 +167,6 @@ func TestParticularStartAndStop(t *testing.T) {
 }
 
 func TestSomeConfigs(t *testing.T) {
-	conf, err = Parse("motion_test.conf")
+	conf, err = parseConfig("motion_test.conf")
 	require.Equals(t, "/tmp", conf[TargetDir])
 }
