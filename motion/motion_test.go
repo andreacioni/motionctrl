@@ -45,7 +45,7 @@ func TestCheckInstall(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
-	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
+	Init("motion_test.conf", false, false)
 
 	err := Startup(false)
 
@@ -66,7 +66,7 @@ func TestStartStop(t *testing.T) {
 
 func TestRestart(t *testing.T) {
 
-	Init("github.com/andreacioni/motionctrl/motion_test.conf", false, false)
+	Init("motion_test.conf", false, false)
 
 	err := Startup(false)
 
