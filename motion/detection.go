@@ -3,7 +3,7 @@ package motion
 import (
 	"fmt"
 
-	"github.com/andreacioni/motionctrl/utils"
+	"../utils"
 )
 
 const (

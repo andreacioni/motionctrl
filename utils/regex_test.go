@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRegexMustMatch(t *testing.T) {
@@ -27,8 +25,8 @@ func TestRegexConfigList(t *testing.T) {
 
 	testMap := RegexSubmatchTypedMap("(?m)^([^;#][a-zA-Z0-9_]+) ([a-zA-Z0-9_()]+)$", testString, nil)
 
-	assert.Equal(t, 3, len(testMap))
-	assert.Equal(t, "12", testMap["hello"])
-	assert.Equal(t, "11", testMap["word"])
-	assert.Equal(t, "(null)", testMap["nullparam"])
+	require.Equal(t, 3, len(testMap))
+	require.Equal(t, "12", testMap["hello"])
+	require.Equal(t, "11", testMap["word"])
+	require.Equal(t, "(null)", testMap["nullparam"])
 }

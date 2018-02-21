@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/andreacioni/motionctrl/version"
+	"../version"
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
 )

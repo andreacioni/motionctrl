@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/andreacioni/motionctrl/utils"
-	"github.com/andreacioni/motionctrl/version"
+	"../utils"
+	"../version"
 )
 
 const (

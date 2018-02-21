@@ -4,7 +4,7 @@ import (
 	"github.com/kpango/glg"
 	"github.com/radovskyb/watcher"
 
-	"github.com/andreacioni/motionctrl/motion"
+	"../motion"
 )
 
 var (
