@@ -17,7 +17,7 @@ type Configuration struct {
 	MotionConfigFile string   `json:"motionConfigFile"`
 	Username         string   `json:"username"`
 	Password         string   `json:"password"`
-	Backup           []Backup `json:"backup"`
+	Backup           Backup   `json:"backup"`
 	Notify           []Notify `json:"notify"`
 }
 

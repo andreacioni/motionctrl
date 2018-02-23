@@ -11,15 +11,13 @@
         "cert" : "/path/to/cert.pem"
     },
 
-    "backup" : [
-        {
-            "when" : "",
-            "method" : "gdrive",
-            "key" : "",
-            "token" : "",
-            "keepLocalCopy":false
-        }
-    ],
+    "backup" :  {
+        "when" : "",
+        "method" : "gdrive",
+        "key" : "",
+        "token" : "",
+        "keepLocalCopy":false
+    },
 
     "notify" : [
         {
