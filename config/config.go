@@ -53,6 +53,14 @@ func Load(filename string) {
 	glg.Debugf("Current config: %+v", conf)
 }
 
-func Get() Configuration {
+func GetConfig() Configuration {
 	return conf
+}
+
+func GetBackupConfig() Backup {
+	return conf.Backup
+}
+
+func GeNotifyConfig() []Notify {
+	return conf.Notify
 }
