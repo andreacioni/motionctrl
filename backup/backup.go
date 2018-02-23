@@ -2,6 +2,7 @@ package backup
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/andreacioni/motionctrl/utils"
@@ -16,8 +17,16 @@ import (
 )
 
 type UploadService interface {
-	Upload(os.File) error
+	Upload(os.FileInfo) error
 }
+
+const (
+	filePerArchive = 100
+)
+
+const (
+	GoogleDriveMethod = "gdrive"
+)
 
 var (
 	backupConfig    config.Backup
@@ -140,13 +149,56 @@ func evaluateFolderSize() int64 {
 }
 
 func buildUploadService(uploadMethod string) UploadService {
+	switch uploadMethod {
+	case GoogleDriveMethod:
+		return &GoogleDriveBackupService{}
+	default:
+		glg.Fatalf("Backup method not recognized")
+	}
+	return nil
+}
 
+func listFile(targetDirectory string) ([]os.FileInfo, error) {
+	fileList := []os.FileInfo{}
+	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			fileList = append(fileList, info)
+		}
+		return nil
+	})
+
+	return fileList, err
+
+}
+
+func archiveFiles(listFile []os.FileInfo, key string) (os.FileInfo, error) {
+	return nil, nil
 }
 
 func backupWorker() {
 	if mu.TryLock() {
 		defer mu.Unlock()
 		glg.Debug("Backup service worker is running now")
+		fileList, err := listFile(targetDirectory)
+
+		if err != nil {
+			glg.Error(err)
+		} else {
+			utils.BlockSlideSlice(fileList, filePerArchive, func(subList interface{}) {
+				subFileList := subList.([]os.FileInfo)
+				zipArchive, err := archiveFiles(subFileList, backupConfig.Key)
+
+				if err != nil {
+					glg.Error(err)
+				} else {
+					err = uploadService.Upload(zipArchive)
+
+					if err != nil {
+						glg.Error(err)
+					}
+				}
+			})
+		}
 
 	} else {
 		glg.Debug("Backup worker is already running")
