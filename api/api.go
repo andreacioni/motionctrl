@@ -37,9 +37,9 @@ func Init() {
 	var group *gin.RouterGroup
 	r := gin.Default()
 
-	if config.Get().Username != "" && config.Get().Password != "" {
+	if config.GetConfig().Username != "" && config.GetConfig().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.Get().Username: config.Get().Password}), needMotionUp)
+		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.GetConfig().Username: config.GetConfig().Password}), needMotionUp)
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
 		group = r.Group("/", needMotionUp)
@@ -49,7 +49,7 @@ func Init() {
 		group.GET(k, v)
 	}
 
-	r.Run(fmt.Sprintf("%s:%d", config.Get().Address, config.Get().Port))
+	r.Run(fmt.Sprintf("%s:%d", config.GetConfig().Address, config.GetConfig().Port))
 }
 
 func needMotionUp(c *gin.Context) {

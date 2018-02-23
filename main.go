@@ -33,13 +33,13 @@ func main() {
 	config.Load(configFile)
 
 	//Initialize motion package
-	motion.Init(config.Get().MotionConfigFile, autostart, detection)
+	motion.Init(config.GetConfig().MotionConfigFile, autostart, detection)
 
 	//Initialize REST api
 	api.Init()
 
 	//Initialize backup  (if enabled)
-	backup.Init()
+	backup.Init(config.GetBackupConfig, motion.ConfigGetRO(motion.ConfigTargetDir))
 }
 
 func setupLogger() {
