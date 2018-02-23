@@ -21,3 +21,19 @@ func InSlice(val interface{}, array interface{}) (exists bool, index int) {
 
 	return
 }
+
+func BlockSlideSlice(array interface{}, blockSize int, f func(interface{})) {
+	switch reflect.TypeOf(array).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(array)
+		n := s.Len()
+
+		for i := 0; i < n; i += blockSize {
+			if i+blockSize > n { //TODO improve here (?)
+				f(s.Slice(i, n).Interface())
+			} else {
+				f(s.Slice(i, i+blockSize).Interface())
+			}
+		}
+	}
+}
