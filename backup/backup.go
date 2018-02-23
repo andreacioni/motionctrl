@@ -11,13 +11,16 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/andreacioni/motionctrl/config"
+
+	"github.com/LK4D4/trylock"
 )
 
-type BackupService interface {
+type UploadService interface {
 	Upload(os.File) error
 }
 
 var (
+	backupConfig    config.Backup
 	targetDirectory string
 
 	dirWatcher    *watcher.Watcher
@@ -25,7 +28,9 @@ var (
 
 	cronSheduler *cron.Cron
 
-	backupConfig config.Backup
+	mu trylock.Mutex
+
+	uploadService UploadService
 )
 
 func Init(backConf config.Backup, targetDir string) {
@@ -43,6 +48,8 @@ func Init(backConf config.Backup, targetDir string) {
 			glg.Fatalf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
 		}
 	}
+
+	uploadService = buildUploadService(backConf.Method)
 
 }
 
@@ -81,7 +88,7 @@ func setupDirectoryWatcher() error {
 	maxFolderSize, err := utils.FromTextSize(backupConfig.When)
 
 	if err == nil {
-		glg.Infof("Setup directory watcher, max size: %d", maxFolderSize)
+		glg.Infof("Setup directory watcher, max size: %d bytes", maxFolderSize)
 
 		dirWatcher = watcher.New()
 
@@ -132,6 +139,16 @@ func evaluateFolderSize() int64 {
 	return totSize
 }
 
+func buildUploadService(uploadMethod string) UploadService {
+
+}
+
 func backupWorker() {
-	glg.Debug("Backup service worker is running now...")
+	if mu.TryLock() {
+		defer mu.Unlock()
+		glg.Debug("Backup service worker is running now")
+
+	} else {
+		glg.Debug("Backup worker is already running")
+	}
 }
