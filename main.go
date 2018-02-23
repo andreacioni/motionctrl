@@ -39,7 +39,7 @@ func main() {
 	api.Init()
 
 	//Initialize backup  (if enabled)
-	backup.Init(config.GetBackupConfig, motion.ConfigGetRO(motion.ConfigTargetDir))
+	backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir))
 }
 
 func setupLogger() {
