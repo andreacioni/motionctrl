@@ -114,6 +114,7 @@ func setupDirectoryWatcher() error {
 			}
 		}()
 
+		dirWatcher.Wait()
 	}
 
 	return err
