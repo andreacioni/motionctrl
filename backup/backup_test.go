@@ -1,8 +1,13 @@
 package backup
 
-import "testing"
+import (
+	"fmt"
+	"testing"
 
-import "github.com/andreacioni/motionctrl/config"
+	"github.com/stretchr/testify/require"
+
+	"github.com/andreacioni/motionctrl/config"
+)
 
 func TestBackupCron(t *testing.T) {
 	Init(config.Backup{When: "0 0 * * * *", Method: "gdrive"}, ".")
@@ -12,4 +17,10 @@ func TestBackupCron(t *testing.T) {
 func TestBackupSize(t *testing.T) {
 	Init(config.Backup{When: "10MB", Method: "gdrive"}, ".")
 	Shutdown()
+}
+
+func TestListFiles(t *testing.T) {
+	list, err := listFile(".")
+	require.NoError(t, err)
+	fmt.Printf("%+v\n", list)
 }

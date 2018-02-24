@@ -17,11 +17,11 @@ import (
 )
 
 type UploadService interface {
-	Upload(os.FileInfo) error
+	Upload(string) error
 }
 
 const (
-	GoogleDriveMethod = "gdrive"
+	GoogleDriveMethod = "google"
 )
 
 var (
@@ -154,11 +154,17 @@ func buildUploadService(uploadMethod string) UploadService {
 	return nil
 }
 
-func listFile(targetDirectory string) ([]os.FileInfo, error) {
-	fileList := []os.FileInfo{}
+func listFile(targetDirectory string) ([]string, error) {
+	fileList := []string{}
 	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			fileList = append(fileList, info)
+			fullPath, err := filepath.Abs(info.Name())
+			if err != nil {
+				glg.Error(err)
+			} else {
+				fileList = append(fileList, fullPath)
+			}
+
 		}
 		return nil
 	})
@@ -167,12 +173,22 @@ func listFile(targetDirectory string) ([]os.FileInfo, error) {
 
 }
 
-func archiveFiles(fileList []os.FileInfo, key string) (os.FileInfo, error) {
-	glg.Debugf("Now compressing: %+v, with key? %b", fileList, key != "")
-	t := time.Now()
-	fileName := t.Format("yyyyMMddHHmmss")
+func archiveFiles(fileList []string) (string, error) { //TODO
+	glg.Debugf("Now compressing: %+v", fileList)
 
-	return nil, nil
+	return "", nil
+}
+
+func encryptAndUpload(filePath string, key string) error {
+	var err error
+
+	if key != "" { //TODO
+
+	}
+
+	err = uploadService.Upload(filePath)
+
+	return err
 }
 
 func backupWorker() {
@@ -186,21 +202,24 @@ func backupWorker() {
 		if err != nil {
 			glg.Error(err)
 		} else {
-			utils.BlockSlideSlice(fileList, filePerArchive, func(subList interface{}) {
-				subFileList := subList.([]os.FileInfo)
+			if backupConfig.Archive {
+				utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) {
+					subFileList := subList.([]string)
 
-				zipArchive, err := archiveFiles(subFileList, backupConfig.Key)
-
-				if err != nil {
-					glg.Error(err)
-				} else {
-					err = uploadService.Upload(zipArchive)
+					zipArchive, err := archiveFiles(subFileList)
 
 					if err != nil {
 						glg.Error(err)
+					} else {
+						err = encryptAndUpload(zipArchive, backupConfig.Key)
 					}
+				})
+			} else {
+				for _, f := range fileList {
+					err = encryptAndUpload(f, backupConfig.Key)
 				}
-			})
+			}
+
 		}
 
 	} else {

@@ -13,7 +13,7 @@
 
     "backup" :  {
         "when" : "",
-        "method" : "gdrive",
+        "method" : "google",
         "key" : "",
         "token" : "",
         "archive":true,
