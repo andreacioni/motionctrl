@@ -21,10 +21,6 @@ type UploadService interface {
 }
 
 const (
-	filePerArchive = 100
-)
-
-const (
 	GoogleDriveMethod = "gdrive"
 )
 
@@ -171,7 +167,11 @@ func listFile(targetDirectory string) ([]os.FileInfo, error) {
 
 }
 
-func archiveFiles(listFile []os.FileInfo, key string) (os.FileInfo, error) {
+func archiveFiles(fileList []os.FileInfo, key string) (os.FileInfo, error) {
+	glg.Debugf("Now compressing: %+v, with key? %b", fileList, key != "")
+	t := time.Now()
+	fileName := t.Format("yyyyMMddHHmmss")
+
 	return nil, nil
 }
 
@@ -181,11 +181,14 @@ func backupWorker() {
 		glg.Debug("Backup service worker is running now")
 		fileList, err := listFile(targetDirectory)
 
+		glg.Debugf("Backup file list: %+v", fileList)
+
 		if err != nil {
 			glg.Error(err)
 		} else {
 			utils.BlockSlideSlice(fileList, filePerArchive, func(subList interface{}) {
 				subFileList := subList.([]os.FileInfo)
+
 				zipArchive, err := archiveFiles(subFileList, backupConfig.Key)
 
 				if err != nil {

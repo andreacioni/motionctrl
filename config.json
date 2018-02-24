@@ -16,6 +16,8 @@
         "method" : "gdrive",
         "key" : "",
         "token" : "",
+        "archive":true,
+        "filePerArchive" : 10,
         "keepLocalCopy":false
     },
 

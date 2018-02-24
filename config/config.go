@@ -22,11 +22,13 @@ type Configuration struct {
 }
 
 type Backup struct {
-	When          string `json:"when"`
-	Method        string `json:"method"`
-	Key           string `json:"key"`
-	Token         string `json:"token"`
-	KeepLocalCopy bool   `json:"keepLocalCopy"`
+	When           string `json:"when"`
+	Method         string `json:"method"`
+	Key            string `json:"key"`
+	Token          string `json:"token"`
+	Archive        bool   `json:"archive"`
+	FilePerArchive int    `json:"filePerArchive"`
+	KeepLocalCopy  bool   `json:"keepLocalCopy"`
 }
 
 type Notify struct {
