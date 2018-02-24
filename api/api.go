@@ -30,6 +30,7 @@ var handlersMap = map[string]func(*gin.Context){
 	"/config/set":       setConfigHandler,
 	"/config/get":       getConfigHandler,
 	"/config/write":     writeConfigHandler,
+	"/backup/status":    backupStatus,
 }
 
 func Init() {
@@ -221,4 +222,8 @@ func writeConfigHandler(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "configuration written to file"})
 	}
+}
+
+func backupStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"enabled":backup.})
 }

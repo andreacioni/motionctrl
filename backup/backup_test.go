@@ -10,12 +10,12 @@ import (
 )
 
 func TestBackupCron(t *testing.T) {
-	Init(config.Backup{When: "0 0 * * * *", Method: "google"}, ".")
+	Init(config.Backup{When: "0 0 * * * *", Method: TestMockMethod}, ".")
 	Shutdown()
 }
 
 func TestBackupSize(t *testing.T) {
-	Init(config.Backup{When: "10MB", Method: "google"}, ".")
+	Init(config.Backup{When: "10MB", Method: TestMockMethod}, ".")
 	Shutdown()
 }
 
@@ -23,4 +23,14 @@ func TestListFiles(t *testing.T) {
 	list, err := listFile(".")
 	require.NoError(t, err)
 	fmt.Printf("%+v\n", list)
+}
+
+func TestBackupMethod(t *testing.T) {
+	_, err := buildUploadService(GoogleDriveMethod)
+
+	require.NoError(t, err)
+
+	_, err = buildUploadService(TestMockMethod)
+
+	require.NoError(t, err)
 }

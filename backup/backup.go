@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -23,6 +24,7 @@ type UploadService interface {
 
 const (
 	GoogleDriveMethod = "google"
+	TestMockMethod    = "mock"
 )
 
 var (
@@ -37,6 +39,8 @@ var (
 	mu trylock.Mutex
 
 	uploadService UploadService
+
+	backupReady bool
 )
 
 func Init(backConf config.Backup, targetDir string) {
@@ -55,14 +59,19 @@ func Init(backConf config.Backup, targetDir string) {
 		}
 	}
 
-	uploadService = buildUploadService(backConf.Method)
+	uploadService, err = buildUploadService(backConf.Method)
+
+	if err != nil {
+		glg.Fatal(err)
+	}
 
 	err = uploadService.Authenticate()
 
 	if err != nil {
-		glg.Failf("Failed to authenticate on upload service: %s", err.Error())
+		glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
 	}
 
+	backupReady = true
 }
 
 func Shutdown() {
@@ -78,6 +87,8 @@ func Shutdown() {
 		cronSheduler.Stop()
 		cronSheduler = nil
 	}
+
+	backupReady = false
 }
 
 func setupCronSheduler() error {
@@ -109,7 +120,7 @@ func setupDirectoryWatcher() error {
 		dirWatcher.FilterOps(watcher.Create)
 
 		if err := dirWatcher.AddRecursive(targetDirectory); err != nil {
-			glg.Fatal(err)
+			return err
 		}
 
 		go func() {
@@ -117,9 +128,8 @@ func setupDirectoryWatcher() error {
 				select {
 				case event := <-dirWatcher.Event:
 					glg.Debug(event)
-
 				case err := <-dirWatcher.Error:
-					glg.Fatal(err)
+					glg.Error(err)
 				case <-dirWatcher.Closed:
 					return
 				}
@@ -151,14 +161,17 @@ func evaluateFolderSize() int64 {
 	return totSize
 }
 
-func buildUploadService(uploadMethod string) UploadService {
+func buildUploadService(uploadMethod string) (UploadService, error) {
+	var err error
 	switch uploadMethod {
 	case GoogleDriveMethod:
-		return &GoogleDriveBackupService{}
+		return &GoogleDriveBackupService{}, nil
+	case TestMockMethod:
+		return &MockBackupService{}, nil
 	default:
-		glg.Fatalf("Backup method not recognized")
+		err = fmt.Errorf("Backup method not recognized")
 	}
-	return nil
+	return nil, err
 }
 
 func listFile(targetDirectory string) ([]string, error) {
