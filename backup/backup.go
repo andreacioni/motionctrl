@@ -17,6 +17,7 @@ import (
 )
 
 type UploadService interface {
+	Authenticate() error
 	Upload(string) error
 }
 
@@ -55,6 +56,12 @@ func Init(backConf config.Backup, targetDir string) {
 	}
 
 	uploadService = buildUploadService(backConf.Method)
+
+	err = uploadService.Authenticate()
+
+	if err != nil {
+		glg.Failf("Failed to authenticate on upload service: %s", err.Error())
+	}
 
 }
 

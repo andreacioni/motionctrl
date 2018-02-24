@@ -10,12 +10,12 @@ import (
 )
 
 func TestBackupCron(t *testing.T) {
-	Init(config.Backup{When: "0 0 * * * *", Method: "gdrive"}, ".")
+	Init(config.Backup{When: "0 0 * * * *", Method: "google"}, ".")
 	Shutdown()
 }
 
 func TestBackupSize(t *testing.T) {
-	Init(config.Backup{When: "10MB", Method: "gdrive"}, ".")
+	Init(config.Backup{When: "10MB", Method: "google"}, ".")
 	Shutdown()
 }
 
