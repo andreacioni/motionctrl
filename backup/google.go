@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"google.golang.org/api/googleapi"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,15 +14,73 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
+
+	"github.com/andreacioni/motionctrl/version"
 )
 
 type GoogleDriveBackupService struct {
 	service *drive.Service
 }
 
-func (b GoogleDriveBackupService) Upload(file string) error {
+func (b GoogleDriveBackupService) Upload(filePath string) error {
+	dir, err := b.getRemoteDir()
+
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve base directory %v", err)
+	}
+
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		fmt.Errorf("Unable open file %s: %v", filePath, err)
+	}
+
+	remoteFile := &drive.File{
+		Name:     file.Name(),
+		MimeType: file.Name(), //mimeFromExt
+	}
+
+	b.service.Files.Create(remoteFile).Media(, googleapi.MediaOptions.)
 
 	return nil
+}
+
+func mimeFromExt() {
+
+}
+
+//getRemoteDir check if directory 'motionctrl' exists inside root, if not create it
+func (b GoogleDriveBackupService) getRemoteDir() (*drive.File, error) {
+	r, err := b.service.Files.List().Q(fmt.Sprintf("'root' in parents and name='%s' and mimeType='application/vnd.google-apps.folder'", version.Name)).PageSize(1).
+		Fields("nextPageToken, files(id, name)").Do()
+
+	if err != nil {
+		return nil, fmt.Errorf("Cannot retrieve information about Google Drive root directory: %v", err)
+	}
+
+	if len(r.Files) == 0 {
+		return b.createRemoteDir()
+	}
+
+	return r.Files[0], nil
+
+}
+
+func (b GoogleDriveBackupService) createRemoteDir() (*drive.File, error) {
+	remoteDir := &drive.File{
+		Name:     version.Name,
+		Parents:  []string{"root"},
+		MimeType: "application/vnd.google-apps.folder",
+	}
+
+	remoteDir, err := b.service.Files.Create(remoteDir).Do()
+
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create remote directory: %v", err)
+	}
+
+	return remoteDir, nil
+
 }
 
 func (b GoogleDriveBackupService) Authenticate() error {
@@ -98,10 +157,9 @@ func (b GoogleDriveBackupService) tokenCacheFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
+	tokenCacheDir := usr.HomeDir
 	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("drive-go-quickstart.json")), err
+		url.QueryEscape(fmt.Sprintf(".google_drive_%s.json", version.Name))), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.

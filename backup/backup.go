@@ -22,6 +22,15 @@ type UploadService interface {
 	Upload(string) error
 }
 
+type State int
+
+const (
+	StateActiveIdle State = iota
+	StateActiveRunning
+	StateActiveErrored
+	StateDeactivated
+)
+
 const (
 	GoogleDriveMethod = "google"
 	TestMockMethod    = "mock"
@@ -40,7 +49,7 @@ var (
 
 	uploadService UploadService
 
-	backupReady bool
+	backupStatus State
 )
 
 func Init(backConf config.Backup, targetDir string) {
@@ -71,7 +80,11 @@ func Init(backConf config.Backup, targetDir string) {
 		glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
 	}
 
-	backupReady = true
+	backupStatus = StateActiveIdle
+}
+
+func Status() State {
+	return backupStatus
 }
 
 func Shutdown() {
@@ -88,7 +101,7 @@ func Shutdown() {
 		cronSheduler = nil
 	}
 
-	backupReady = false
+	backupStatus = StateDeactivated
 }
 
 func setupCronSheduler() error {
@@ -215,28 +228,48 @@ func backupWorker() {
 	if mu.TryLock() {
 		defer mu.Unlock()
 		glg.Debug("Backup service worker is running now")
+		backupStatus = StateActiveRunning
+
 		fileList, err := listFile(targetDirectory)
 
 		glg.Debugf("Backup file list: %+v", fileList)
 
 		if err != nil {
 			glg.Error(err)
+			backupStatus = StateActiveErrored
 		} else {
 			if backupConfig.Archive {
-				utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) {
+				utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
 					subFileList := subList.([]string)
 
 					zipArchive, err := archiveFiles(subFileList)
 
 					if err != nil {
-						glg.Error(err)
-					} else {
-						err = encryptAndUpload(zipArchive, backupConfig.Key)
+						return false
 					}
+
+					err = encryptAndUpload(zipArchive, backupConfig.Key)
+
+					if err != nil {
+						return false
+					}
+
+					return true
 				})
+
+				if err != nil {
+					glg.Error(err)
+					backupStatus = StateActiveErrored
+				}
 			} else {
 				for _, f := range fileList {
 					err = encryptAndUpload(f, backupConfig.Key)
+
+					if err != nil {
+						glg.Error(err)
+						backupStatus = StateActiveErrored
+						return
+					}
 				}
 			}
 

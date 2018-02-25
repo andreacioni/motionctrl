@@ -2,6 +2,7 @@ package backup
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -33,4 +34,11 @@ func TestBackupMethod(t *testing.T) {
 	_, err = buildUploadService(TestMockMethod)
 
 	require.NoError(t, err)
+}
+
+func TestGetName(t *testing.T) {
+	file, err := os.Open("../main.go")
+
+	require.NoError(t, err)
+	require.Equal(t, "main.go", file.Name())
 }
