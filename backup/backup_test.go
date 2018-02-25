@@ -2,7 +2,6 @@ package backup
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -38,10 +37,8 @@ func TestBackupMethod(t *testing.T) {
 }
 
 func TestGetName(t *testing.T) {
-	file, err := os.Open("../main.go")
-
-	require.NoError(t, err)
-	require.Equal(t, "main.go", file.Name())
+	require.Equal(t, "main.go", filepath.Base("../main.go"))
+	require.Equal(t, "file", filepath.Base("/abc/def/file"))
 }
 
 func TestExtToMime(t *testing.T) {

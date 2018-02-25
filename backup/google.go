@@ -35,7 +35,7 @@ func (b GoogleDriveBackupService) Upload(filePath string) error {
 	}
 
 	remoteFile := &drive.File{
-		Name:     file.Name(),
+		Name:     filepath.Base(filePath),
 		MimeType: b.mimeFromExt(filepath.Ext(filePath)),
 		Parents:  []string{dir.Id},
 	}
