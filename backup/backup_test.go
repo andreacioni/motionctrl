@@ -3,6 +3,7 @@ package backup
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,4 +42,13 @@ func TestGetName(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "main.go", file.Name())
+}
+
+func TestExtToMime(t *testing.T) {
+
+	require.Equal(t, ".jpeg", filepath.Ext("/abc/test.jpeg"))
+	require.Equal(t, ".jpg", filepath.Ext("/abc/test.jpg"))
+
+	require.Equal(t, "image/jpeg", GoogleDriveBackupService{}.mimeFromExt(".jpeg"))
+	require.Equal(t, "image/jpeg", GoogleDriveBackupService{}.mimeFromExt(".jpg"))
 }

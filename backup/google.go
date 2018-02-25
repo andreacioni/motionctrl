@@ -1,7 +1,6 @@
 package backup
 
 import (
-	"google.golang.org/api/googleapi"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -32,26 +31,38 @@ func (b GoogleDriveBackupService) Upload(filePath string) error {
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		fmt.Errorf("Unable open file %s: %v", filePath, err)
+		return fmt.Errorf("Unable open file %s: %v", filePath, err)
 	}
 
 	remoteFile := &drive.File{
 		Name:     file.Name(),
-		MimeType: file.Name(), //mimeFromExt
+		MimeType: b.mimeFromExt(filepath.Ext(filePath)),
+		Parents:  []string{dir.Id},
 	}
 
-	b.service.Files.Create(remoteFile).Media(, googleapi.MediaOptions.)
+	_, err = b.service.Files.Create(remoteFile).Media(file).Do()
 
-	return nil
+	return err
 }
 
-func mimeFromExt() {
+func (b GoogleDriveBackupService) mimeFromExt(ext string) string {
+	switch ext {
+	case ".jpg":
+		return "image/jpeg"
+	case ".jpeg":
+		return "image/jpeg"
+	case ".avi":
+		return "video/avi"
+	case ".mjpeg":
+		return "video/x-motion-jpeg"
+	}
 
+	return ""
 }
 
 //getRemoteDir check if directory 'motionctrl' exists inside root, if not create it
 func (b GoogleDriveBackupService) getRemoteDir() (*drive.File, error) {
-	r, err := b.service.Files.List().Q(fmt.Sprintf("'root' in parents and name='%s' and mimeType='application/vnd.google-apps.folder'", version.Name)).PageSize(1).
+	r, err := b.service.Files.List().Q(fmt.Sprintf("'root' in parents and name='%s' and mimeType='application/vnd.google-apps.folder' and trashed = false", version.Name)).PageSize(1).
 		Fields("nextPageToken, files(id, name)").Do()
 
 	if err != nil {
