@@ -68,3 +68,6 @@ __FAQ__
 
  - How can I obtain valid cert/key to enable HTTPS support?
    - BLA BLA BLA
+   
+ - How can I enable Google Drive backup?
+   - BLA BLA BLA
