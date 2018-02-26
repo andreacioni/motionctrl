@@ -22,7 +22,28 @@ type GoogleDriveBackupService struct {
 	service *drive.Service
 }
 
+func (b GoogleDriveBackupService) Authenticate() error {
+	ctx := context.Background()
+
+	config := b.getConfig()
+
+	client, err := b.getClient(ctx, config)
+
+	if err != nil {
+		return fmt.Errorf("Unable to retrieve drive Client %v", err)
+	}
+
+	b.service, err = drive.New(client)
+
+	if err != nil {
+		return fmt.Errorf("Unable to get service instance %v", err)
+	}
+
+	return nil
+}
+
 func (b GoogleDriveBackupService) Upload(filePath string) error {
+	glg.Debugf("%v", b)
 	dir, err := b.getRemoteDir()
 
 	if err != nil {
@@ -93,26 +114,6 @@ func (b GoogleDriveBackupService) createRemoteDir() (*drive.File, error) {
 
 	return remoteDir, nil
 
-}
-
-func (b GoogleDriveBackupService) Authenticate() error {
-	ctx := context.Background()
-
-	config := b.getConfig()
-
-	client, err := b.getClient(ctx, config)
-
-	if err != nil {
-		return fmt.Errorf("Unable to retrieve drive Client %v", err)
-	}
-
-	b.service, err = drive.New(client)
-
-	if err != nil {
-		return fmt.Errorf("Unable to get service instance %v", err)
-	}
-
-	return nil
 }
 
 func (b GoogleDriveBackupService) getConfig() *oauth2.Config {
