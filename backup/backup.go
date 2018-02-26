@@ -6,15 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/utils"
 
+	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"
 	"github.com/radovskyb/watcher"
 	"github.com/robfig/cron"
-
-	"github.com/andreacioni/motionctrl/config"
-
-	"github.com/LK4D4/trylock"
+	"github.com/tevino/abool"
 )
 
 type UploadService interface {
@@ -45,7 +44,8 @@ var (
 
 	cronSheduler *cron.Cron
 
-	mu trylock.Mutex
+	mu      trylock.Mutex
+	runFlag = abool.New()
 
 	uploadService UploadService
 
@@ -81,6 +81,7 @@ func Init(backConf config.Backup, targetDir string) {
 	}
 
 	backupStatus = StateActiveIdle
+	runFlag.Set()
 }
 
 func Status() State {
@@ -90,6 +91,8 @@ func Status() State {
 func Shutdown() {
 
 	glg.Info("Shuting down backup service")
+
+	runFlag.UnSet()
 
 	if dirWatcher != nil {
 		dirWatcher.Close()
@@ -102,6 +105,7 @@ func Shutdown() {
 	}
 
 	backupStatus = StateDeactivated
+
 }
 
 func setupCronSheduler() error {
@@ -191,7 +195,7 @@ func listFile(targetDirectory string) ([]string, error) {
 	fileList := []string{}
 	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			fullPath, err := filepath.Abs(info.Name())
+			fullPath, err := filepath.Abs(path)
 			if err != nil {
 				glg.Error(err)
 			} else {
@@ -225,57 +229,71 @@ func encryptAndUpload(filePath string, key string) error {
 }
 
 func backupWorker() {
-	if mu.TryLock() {
-		defer mu.Unlock()
-		glg.Debug("Backup service worker is running now")
-		backupStatus = StateActiveRunning
+	if runFlag.IsSet() {
+		if mu.TryLock() {
+			defer mu.Unlock()
+			glg.Debug("Backup service worker is running now")
+			backupStatus = StateActiveRunning
 
-		fileList, err := listFile(targetDirectory)
+			fileList, err := listFile(targetDirectory)
 
-		glg.Debugf("Backup file list: %+v", fileList)
+			glg.Debugf("Backup file list: %+v", fileList)
 
-		if err != nil {
-			glg.Error(err)
-			backupStatus = StateActiveErrored
-		} else {
-			if backupConfig.Archive {
-				utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
-					subFileList := subList.([]string)
-
-					zipArchive, err := archiveFiles(subFileList)
-
-					if err != nil {
-						return false
-					}
-
-					err = encryptAndUpload(zipArchive, backupConfig.Key)
-
-					if err != nil {
-						return false
-					}
-
-					return true
-				})
-
-				if err != nil {
-					glg.Error(err)
-					backupStatus = StateActiveErrored
-				}
+			if err != nil {
+				glg.Error(err)
+				backupStatus = StateActiveErrored
 			} else {
-				for _, f := range fileList {
-					err = encryptAndUpload(f, backupConfig.Key)
+				if backupConfig.Archive {
+					utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
+						subFileList := subList.([]string)
+
+						zipArchive, err := archiveFiles(subFileList)
+
+						if err != nil {
+							return false
+						}
+
+						err = encryptAndUpload(zipArchive, backupConfig.Key)
+
+						if err != nil || !runFlag.IsSet() {
+							return false
+						}
+
+						return true
+					})
 
 					if err != nil {
 						glg.Error(err)
 						backupStatus = StateActiveErrored
+					}
+
+					if runFlag.IsSet() {
 						return
 					}
+				} else {
+					for _, f := range fileList {
+
+						err = encryptAndUpload(f, backupConfig.Key)
+
+						if err != nil {
+							glg.Error(err)
+							backupStatus = StateActiveErrored
+							return
+						}
+
+						if runFlag.IsSet() {
+							return
+						}
+					}
 				}
+
 			}
 
+		} else {
+			glg.Debug("Backup worker is already running")
 		}
-
 	} else {
-		glg.Debug("Backup worker is already running")
+		glg.Warn("Worker disabled")
 	}
+
 }

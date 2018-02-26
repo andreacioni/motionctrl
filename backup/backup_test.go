@@ -21,7 +21,7 @@ func TestBackupSize(t *testing.T) {
 }
 
 func TestListFiles(t *testing.T) {
-	list, err := listFile(".")
+	list, err := listFile("../")
 	require.NoError(t, err)
 	fmt.Printf("%+v\n", list)
 }
