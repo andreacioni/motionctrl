@@ -47,7 +47,7 @@ func setupLogger() {
 }
 
 func parseArgs() {
-	flag.StringVar(&configFile, "c", "github.com/andreacioni/motionctrl/config.json", "configuration file path")
+	flag.StringVar(&configFile, "c", "config.json", "configuration file path")
 	flag.StringVar(&logLevel, "l", "WARN", "set log level")
 	flag.BoolVar(&autostart, "a", false, fmt.Sprintf("start motion right after %s", version.Name))
 	flag.BoolVar(&detection, "d", false, "when -a is set, starts with motion detection enabled")
