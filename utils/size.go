@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-func FromTextSize(size string) (uint64, error) {
+func FromTextSize(size string) (int64, error) {
 	size = strings.Replace(strings.TrimSpace(strings.ToUpper(size)), " ", "", -1)
 
 	re := regexp.MustCompile("^([1-9][0-9]*)(B|KB|MB|GB)$")
 	strs := re.FindStringSubmatch(size)
 
-	typeMap := map[string]uint64{
+	typeMap := map[string]int64{
 		"B":  1,
 		"KB": 1000,
 		"MB": 1000000,
@@ -32,5 +32,5 @@ func FromTextSize(size string) (uint64, error) {
 
 	mul := typeMap[strs[2]]
 
-	return uint64(num) * mul, nil
+	return int64(num) * mul, nil
 }
