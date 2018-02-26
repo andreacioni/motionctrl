@@ -190,7 +190,7 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 	case GoogleDriveMethod:
 		return &GoogleDriveBackupService{}, nil
 	case TestMockMethod:
-		return &GoogleDriveBackupService{}, nil
+		return &MockBackupService{}, nil
 	default:
 		err = fmt.Errorf("Backup method not recognized")
 	}
