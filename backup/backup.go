@@ -39,8 +39,7 @@ var (
 	backupConfig    config.Backup
 	targetDirectory string
 
-	dirWatcher    *watcher.Watcher
-	maxFolderSize uint64
+	dirWatcher *watcher.Watcher
 
 	cronSheduler *cron.Cron
 
@@ -143,8 +142,12 @@ func setupDirectoryWatcher() error {
 		go func() {
 			for {
 				select {
-				case event := <-dirWatcher.Event:
-					glg.Debug(event)
+				case <-dirWatcher.Event:
+					folderSize := evaluateFolderSize()
+					glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
+					if folderSize > maxFolderSize {
+						go backupWorker()
+					}
 				case err := <-dirWatcher.Error:
 					glg.Error(err)
 				case <-dirWatcher.Closed:
@@ -194,16 +197,19 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 func listFile(targetDirectory string) ([]string, error) {
 	fileList := []string{}
 	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			fullPath, err := filepath.Abs(path)
-			if err != nil {
-				glg.Error(err)
-			} else {
-				fileList = append(fileList, fullPath)
-			}
+		if err != nil {
+			if !info.IsDir() {
+				fullPath, err := filepath.Abs(path)
+				if err != nil {
+					glg.Error(err)
+				} else {
+					fileList = append(fileList, fullPath)
+				}
 
+			}
 		}
-		return nil
+
+		return err
 	})
 
 	return fileList, err

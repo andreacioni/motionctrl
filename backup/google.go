@@ -3,7 +3,6 @@ package backup
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -138,29 +137,38 @@ func (b GoogleDriveBackupService) getClient(ctx context.Context, config *oauth2.
 	}
 	tok, err := b.tokenFromFile(cacheFile)
 	if err != nil {
-		tok = b.getTokenFromWeb(config)
-		b.saveToken(cacheFile, tok)
+		tok, err = b.getTokenFromWeb(config)
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = b.saveToken(cacheFile, tok)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 	return config.Client(ctx, tok), nil
 }
 
 // getTokenFromWeb uses Config to request a Token.
 // It returns the retrieved Token.
-func (b GoogleDriveBackupService) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+func (b GoogleDriveBackupService) getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
 	var code string
 	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatalf("Unable to read authorization code %v", err)
+		return nil, fmt.Errorf("Unable to read authorization code %v", err)
 	}
 
 	tok, err := config.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token from web %v", err)
+		return nil, fmt.Errorf("Unable to read authorization code %v", err)
 	}
-	return tok
+	return tok, err
 }
 
 // tokenCacheFile generates credential file path/filename.
@@ -190,12 +198,14 @@ func (b GoogleDriveBackupService) tokenFromFile(file string) (*oauth2.Token, err
 
 // saveToken uses a file path to create a file and store the
 // token in it.
-func (b GoogleDriveBackupService) saveToken(file string, token *oauth2.Token) {
+func (b GoogleDriveBackupService) saveToken(file string, token *oauth2.Token) error {
 	glg.Info("Saving credential file to: %s\n", file)
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
+		return fmt.Errorf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+
+	return nil
 }
