@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"sync"
 
-	"../config"
-	"../version"
+	"github.com/andreacioni/motionctrl/config"
+	"github.com/andreacioni/motionctrl/version"
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
 )

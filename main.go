@@ -6,11 +6,11 @@ import (
 
 	"github.com/kpango/glg"
 
-	"./api"
-	"./backup"
-	"./config"
-	"./motion"
-	"./version"
+	"github.com/andreacioni/motionctrl/api"
+	"github.com/andreacioni/motionctrl/backup"
+	"github.com/andreacioni/motionctrl/config"
+	"github.com/andreacioni/motionctrl/motion"
+	"github.com/andreacioni/motionctrl/version"
 )
 
 var (

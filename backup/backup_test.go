@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"../config"
+	"github.com/andreacioni/motionctrl/config"
 )
 
 func TestBackupCron(t *testing.T) {

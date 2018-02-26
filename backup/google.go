@@ -16,7 +16,7 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 
-	"../version"
+	"github.com/andreacioni/motionctrl/version"
 )
 
 type GoogleDriveBackupService struct {

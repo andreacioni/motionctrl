@@ -11,10 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kpango/glg"
 
-	"../config"
-	"../motion"
-	"../utils"
-	"../version"
+	"github.com/andreacioni/motionctrl/config"
+	"github.com/andreacioni/motionctrl/motion"
+	"github.com/andreacioni/motionctrl/utils"
+	"github.com/andreacioni/motionctrl/version"
 )
 
 var handlersMap = map[string]func(*gin.Context){

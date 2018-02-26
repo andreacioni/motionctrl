@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"../config"
-	"../utils"
+	"github.com/andreacioni/motionctrl/config"
+	"github.com/andreacioni/motionctrl/utils"
 
 	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"
