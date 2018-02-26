@@ -253,7 +253,7 @@ func backupWorker() {
 							return false
 						}
 
-						err = encryptAndUpload(zipArchive, backupConfig.Key)
+						err = encryptAndUpload(zipArchive, backupConfig.EncryptionKey)
 
 						if err != nil || !runFlag.IsSet() {
 							return false
@@ -273,7 +273,7 @@ func backupWorker() {
 				} else {
 					for _, f := range fileList {
 
-						err = encryptAndUpload(f, backupConfig.Key)
+						err = encryptAndUpload(f, backupConfig.EncryptionKey)
 
 						if err != nil {
 							glg.Error(err)
