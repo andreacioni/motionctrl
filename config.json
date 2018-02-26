@@ -14,8 +14,7 @@
     "backup" :  {
         "when" : "",
         "method" : "google",
-        "key" : "",
-        "token" : "",
+        "encryptionKey" : "",
         "archive":true,
         "filePerArchive" : 10,
         "keepLocalCopy":false

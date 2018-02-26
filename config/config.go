@@ -24,8 +24,7 @@ type Configuration struct {
 type Backup struct {
 	When           string `json:"when"`
 	Method         string `json:"method"`
-	Key            string `json:"key"`
-	Token          string `json:"token"`
+	EncryptionKey  string `json:"encryptionKey"`
 	Archive        bool   `json:"archive"`
 	FilePerArchive int    `json:"filePerArchive"`
 	KeepLocalCopy  bool   `json:"keepLocalCopy"`
