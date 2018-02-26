@@ -23,7 +23,7 @@ func InSlice(val interface{}, array interface{}) (exists bool, index int) {
 }
 
 func BlockSlideSlice(array interface{}, blockSize int, f func(interface{}) bool) {
-	var run bool
+	run := true
 	switch reflect.TypeOf(array).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(array)

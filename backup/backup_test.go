@@ -2,8 +2,11 @@ package backup
 
 import (
 	"fmt"
+	"mime"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -46,6 +49,21 @@ func TestExtToMime(t *testing.T) {
 	require.Equal(t, ".jpeg", filepath.Ext("/abc/test.jpeg"))
 	require.Equal(t, ".jpg", filepath.Ext("/abc/test.jpg"))
 
-	require.Equal(t, "image/jpeg", GoogleDriveBackupService{}.mimeFromExt(".jpeg"))
-	require.Equal(t, "image/jpeg", GoogleDriveBackupService{}.mimeFromExt(".jpg"))
+	require.Equal(t, "image/jpeg", mime.TypeByExtension(".jpeg"))
+	require.Equal(t, "image/jpeg", mime.TypeByExtension(".jpg"))
+}
+
+func TestJoinArchive(t *testing.T) {
+	fmt.Println(filepath.Join(os.TempDir(), time.Now().Format("20060102_150405")+"tar.gz"))
+}
+
+func TestArchive(t *testing.T) {
+	fileList, err := listFile(".")
+	require.NoError(t, err)
+	fmt.Println(fileList)
+
+	archive, err := archiveFiles(fileList)
+	require.NoError(t, err)
+	fmt.Println(archive)
+
 }

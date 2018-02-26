@@ -1,7 +1,10 @@
 package backup
 
 import (
+	"archive/tar"
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -187,7 +190,7 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 	case GoogleDriveMethod:
 		return &GoogleDriveBackupService{}, nil
 	case TestMockMethod:
-		return &MockBackupService{}, nil
+		return &GoogleDriveBackupService{}, nil
 	default:
 		err = fmt.Errorf("Backup method not recognized")
 	}
@@ -216,10 +219,45 @@ func listFile(targetDirectory string) ([]string, error) {
 
 }
 
-func archiveFiles(fileList []string) (string, error) { //TODO
+func archiveFiles(fileList []string) (string, error) {
 	glg.Debugf("Now compressing: %+v", fileList)
 
-	return "", nil
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	for _, f := range fileList {
+		fileInfo, err := os.Stat(f)
+		if err != nil {
+			return "", err
+		}
+		hdr := &tar.Header{
+			Name: filepath.Base(f),
+			Mode: 0600,
+			Size: fileInfo.Size(),
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return "", err
+		}
+		b, err := ioutil.ReadFile(f)
+		if err != nil {
+			return "", err
+		}
+		if _, err := tw.Write(b); err != nil {
+			return "", err
+		}
+	}
+	if err := tw.Close(); err != nil {
+		return "", err
+	}
+
+	archiveFileName := time.Now().Format("20060102_150405") + ".tar.gz"
+	archiveFilePath := filepath.Join(os.TempDir(), archiveFileName)
+	if err := ioutil.WriteFile(archiveFilePath, buf.Bytes(), 0600); err != nil {
+		return "", err
+	}
+
+	glg.Debugf("Archive file created:%s", archiveFileName)
+
+	return archiveFilePath, nil
 }
 
 func encryptAndUpload(filePath string, key string) error {
@@ -231,7 +269,24 @@ func encryptAndUpload(filePath string, key string) error {
 
 	err = uploadService.Upload(filePath)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	glg.Debugf("Uploaded file: %s", filePath)
+
+	return nil
+}
+
+func removeFiles(filePath []string) error {
+	for _, f := range filePath {
+		err := os.Remove(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func backupWorker() {
@@ -249,19 +304,29 @@ func backupWorker() {
 				glg.Error(err)
 				backupStatus = StateActiveErrored
 			} else {
-				if backupConfig.Archive {
+				if backupConfig.Archive { //Group file into archive, encrypt (if needed) and upload
 					utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
 						subFileList := subList.([]string)
 
-						zipArchive, err := archiveFiles(subFileList)
+						archive, err := archiveFiles(subFileList)
 
 						if err != nil {
 							return false
 						}
 
-						err = encryptAndUpload(zipArchive, backupConfig.EncryptionKey)
+						err = encryptAndUpload(archive, backupConfig.EncryptionKey)
 
-						if err != nil || !runFlag.IsSet() {
+						if err != nil {
+							return false
+						}
+
+						err = removeFiles(append(subFileList, archive)) //Remove archive file and photo
+
+						if err != nil {
+							return false
+						}
+
+						if !runFlag.IsSet() {
 							return false
 						}
 
@@ -273,10 +338,10 @@ func backupWorker() {
 						backupStatus = StateActiveErrored
 					}
 
-					if runFlag.IsSet() {
+					if !runFlag.IsSet() {
 						return
 					}
-				} else {
+				} else { //Encrypt file (if needed) and upload. No archive
 					for _, f := range fileList {
 
 						err = encryptAndUpload(f, backupConfig.EncryptionKey)
@@ -287,7 +352,15 @@ func backupWorker() {
 							return
 						}
 
-						if runFlag.IsSet() {
+						err = os.Remove(f)
+
+						if err != nil {
+							glg.Error(err)
+							backupStatus = StateActiveErrored
+							return
+						}
+
+						if !runFlag.IsSet() {
 							return
 						}
 					}
