@@ -6,11 +6,11 @@ import (
 
 	"github.com/kpango/glg"
 
-	"github.com/andreacioni/motionctrl/api"
-	"github.com/andreacioni/motionctrl/backup"
-	"github.com/andreacioni/motionctrl/config"
-	"github.com/andreacioni/motionctrl/motion"
-	"github.com/andreacioni/motionctrl/version"
+	"./api"
+	"./backup"
+	"./config"
+	"./motion"
+	"./version"
 )
 
 var (
@@ -35,11 +35,11 @@ func main() {
 	//Initialize motion package
 	motion.Init(config.GetConfig().MotionConfigFile, autostart, detection)
 
-	//Initialize REST api
-	api.Init()
-
 	//Initialize backup  (if enabled)
 	backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir))
+
+	//Initialize REST api
+	api.Init()
 }
 
 func setupLogger() {

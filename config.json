@@ -12,10 +12,10 @@
     },
 
     "backup" :  {
-        "when" : "",
+        "when" : "* * * * *",
         "method" : "google",
         "encryptionKey" : "",
-        "archive":true,
+        "archive":false,
         "filePerArchive" : 10,
         "keepLocalCopy":false
     },

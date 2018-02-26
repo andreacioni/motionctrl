@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/andreacioni/motionctrl/config"
-	"github.com/andreacioni/motionctrl/utils"
+	"../config"
+	"../utils"
 
 	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"

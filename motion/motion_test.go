@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/andreacioni/motionctrl/utils"
+	"../utils"
 
 	"github.com/stretchr/testify/require"
 )
