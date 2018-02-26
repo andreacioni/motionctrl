@@ -320,7 +320,10 @@ func backupWorker() {
 							return false
 						}
 
-						err = removeFiles(append(subFileList, archive)) //Remove archive file and photo
+						if !backupConfig.KeepLocalCopy {
+							subFileList = append(subFileList, archive) //Remove archive file and photo
+						}
+						err = removeFiles(subFileList)
 
 						if err != nil {
 							return false
@@ -352,12 +355,14 @@ func backupWorker() {
 							return
 						}
 
-						err = os.Remove(f)
+						if !backupConfig.KeepLocalCopy {
+							err = os.Remove(f)
 
-						if err != nil {
-							glg.Error(err)
-							backupStatus = StateActiveErrored
-							return
+							if err != nil {
+								glg.Error(err)
+								backupStatus = StateActiveErrored
+								return
+							}
 						}
 
 						if !runFlag.IsSet() {
