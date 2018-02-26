@@ -127,7 +127,7 @@ func setupDirectoryWatcher() error {
 	maxFolderSize, err := utils.FromTextSize(backupConfig.When)
 
 	if err == nil {
-		glg.Infof("Setup directory watcher, max size: %d bytes", maxFolderSize)
+		glg.Infof("Setup directory watcher on: %s, max size: %d bytes", targetDirectory, maxFolderSize)
 
 		dirWatcher = watcher.New()
 
@@ -197,7 +197,7 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 func listFile(targetDirectory string) ([]string, error) {
 	fileList := []string{}
 	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+		if err == nil {
 			if !info.IsDir() {
 				fullPath, err := filepath.Abs(path)
 				if err != nil {
