@@ -10,6 +10,8 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/kpango/glg"
+
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -189,7 +191,7 @@ func (b GoogleDriveBackupService) tokenFromFile(file string) (*oauth2.Token, err
 // saveToken uses a file path to create a file and store the
 // token in it.
 func (b GoogleDriveBackupService) saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
+	glg.Info("Saving credential file to: %s\n", file)
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
