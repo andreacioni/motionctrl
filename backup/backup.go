@@ -233,6 +233,10 @@ func listFile(targetDirectory string) ([]string, error) {
 func archiveFiles(fileList []string) (string, error) {
 	glg.Debugf("Now compressing: %+v", fileList)
 
+	if len(fileList) == 0 {
+		return "", fmt.Errorf("No file to archive")
+	}
+
 	var buf bytes.Buffer
 	tw := tar.NewWriter(&buf)
 	for _, f := range fileList {
@@ -261,7 +265,7 @@ func archiveFiles(fileList []string) (string, error) {
 	}
 
 	archiveFileName := time.Now().Format("20060102_150405") + ".tar.gz"
-	archiveFilePath := filepath.Join(os.TempDir(), archiveFileName)
+	archiveFilePath := filepath.Join(targetDirectory, archiveFileName)
 	if err := ioutil.WriteFile(archiveFilePath, buf.Bytes(), 0600); err != nil {
 		return "", err
 	}
@@ -301,6 +305,7 @@ func encryptAndUpload(filePath string, key string) error {
 
 func removeFiles(filePath []string) error {
 	for _, f := range filePath {
+		glg.Debugf("Removing file: %s", f)
 		err := os.Remove(f)
 		if err != nil {
 			return err
