@@ -27,7 +27,6 @@ type Backup struct {
 	EncryptionKey  string `json:"encryptionKey"`
 	Archive        bool   `json:"archive"`
 	FilePerArchive int    `json:"filePerArchive"`
-	KeepLocalCopy  bool   `json:"keepLocalCopy"`
 }
 
 type Notify struct {

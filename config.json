@@ -14,10 +14,9 @@
     "backup" :  {
         "when" : "@every 1m",
         "method" : "google",
-        "encryptionKey" : "",
+        "encryptionKey" : "this!is!a!secret!password",
         "archive":true,
-        "filePerArchive" : 10,
-        "keepLocalCopy":false
+        "filePerArchive" : 10
     },
 
     "notify" : [
