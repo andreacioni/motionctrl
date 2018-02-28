@@ -13,6 +13,7 @@ import (
 	"github.com/andreacioni/aescrypt"
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/utils"
+	"github.com/andreacioni/motionctrl/version"
 
 	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"
@@ -264,8 +265,8 @@ func archiveFiles(fileList []string) (string, error) {
 		return "", err
 	}
 
-	archiveFileName := time.Now().Format("20060102_150405") + ".tar.gz"
-	archiveFilePath := filepath.Join(targetDirectory, archiveFileName)
+	archiveFileName := time.Now().Format(fmt.Sprintf("%s_20060102_150405", version.Name)) + ".tar.gz"
+	archiveFilePath := filepath.Join(os.TempDir(), archiveFileName)
 	if err := ioutil.WriteFile(archiveFilePath, buf.Bytes(), 0600); err != nil {
 		return "", err
 	}
@@ -279,7 +280,7 @@ func archiveFiles(fileList []string) (string, error) {
 	return archiveFilePath, nil
 }
 
-func encryptAndUpload(filePath string, key string) error {
+func encryptAndUpload(filePath string, key string) (string, error) {
 	var err error
 
 	if key != "" {
@@ -287,20 +288,25 @@ func encryptAndUpload(filePath string, key string) error {
 
 		aesFilePath := filePath + ".aes"
 		if err = aescrypt.New(key).Encrypt(filePath, aesFilePath); err != nil {
-			return fmt.Errorf("Failed to encrypt file %s: %v", filePath, aesFilePath)
+			return "", fmt.Errorf("Failed to encrypt file %s: %v", filePath, aesFilePath)
 		}
+
+		if err = os.Remove(filePath); err != nil { //Remove original unencrypted file
+			return "", fmt.Errorf("Failed to remove original file %s: %v", filePath, aesFilePath)
+		}
+
 		filePath = aesFilePath
 	}
 
 	err = uploadService.Upload(filePath)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	glg.Debugf("Uploaded file: %s", filePath)
 
-	return nil
+	return filePath, nil
 }
 
 func removeFiles(filePath []string) error {
@@ -340,7 +346,7 @@ func backupWorker() {
 							return false
 						}
 
-						if err = encryptAndUpload(archive, backupConfig.EncryptionKey); err != nil {
+						if archive, err = encryptAndUpload(archive, backupConfig.EncryptionKey); err != nil {
 							return false
 						}
 
@@ -368,7 +374,7 @@ func backupWorker() {
 				} else { //Encrypt file (if needed) and upload. No archive
 					for _, f := range fileList {
 
-						if err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
+						if f, err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
 							glg.Error(err)
 							setStatus(StateActiveErrored)
 							return
