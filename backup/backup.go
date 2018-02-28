@@ -202,7 +202,7 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 	case GoogleDriveMethod:
 		return &GoogleDriveBackupService{}, nil
 	case TestMockMethod:
-		return &GoogleDriveBackupService{}, nil
+		return &MockBackupService{}, nil
 	default:
 		err = fmt.Errorf("Backup method not recognized")
 	}
@@ -233,10 +233,6 @@ func listFile(targetDirectory string) ([]string, error) {
 
 func archiveFiles(fileList []string) (string, error) {
 	glg.Debugf("Now compressing: %+v", fileList)
-
-	if len(fileList) == 0 {
-		return "", fmt.Errorf("No file to archive")
-	}
 
 	var buf bytes.Buffer
 	tw := tar.NewWriter(&buf)
