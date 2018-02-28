@@ -340,18 +340,13 @@ func backupWorker() {
 							return false
 						}
 
-						err = encryptAndUpload(archive, backupConfig.EncryptionKey)
-
-						if err != nil {
+						if err = encryptAndUpload(archive, backupConfig.EncryptionKey); err != nil {
 							return false
 						}
 
-						if !backupConfig.KeepLocalCopy {
-							subFileList = append(subFileList, archive) //Remove archive file and photo
-						}
-						err = removeFiles(subFileList)
+						subFileList = append(subFileList, archive) //Remove archive file and photo
 
-						if err != nil {
+						if err = removeFiles(subFileList); err != nil {
 							return false
 						}
 
@@ -373,22 +368,16 @@ func backupWorker() {
 				} else { //Encrypt file (if needed) and upload. No archive
 					for _, f := range fileList {
 
-						err = encryptAndUpload(f, backupConfig.EncryptionKey)
-
-						if err != nil {
+						if err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
 							glg.Error(err)
 							setStatus(StateActiveErrored)
 							return
 						}
 
-						if !backupConfig.KeepLocalCopy {
-							err = os.Remove(f)
-
-							if err != nil {
-								glg.Error(err)
-								setStatus(StateActiveErrored)
-								return
-							}
+						if err = os.Remove(f); err != nil {
+							glg.Error(err)
+							setStatus(StateActiveErrored)
+							return
 						}
 
 						if !runFlag.IsSet() {
