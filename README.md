@@ -41,8 +41,7 @@ In order to execute motionctrl you need a valid JSON configuration file, an exam
         "method" : "google",
         "encryptionKey" : "super_secret_key",
         "archive":true,
-        "filePerArchive" : 10,
-        "keepLocalCopy":false
+        "filePerArchive" : 10
     },
 }
 ```
