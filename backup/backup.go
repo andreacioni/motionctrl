@@ -266,7 +266,7 @@ func archiveFiles(fileList []string) (string, error) {
 		return "", err
 	}
 
-	if err := removeFiles(fileList); err != nil {
+	if err := removeFiles(fileList); err != nil { //Mantain archive, drop original files
 		return "", err
 	}
 
