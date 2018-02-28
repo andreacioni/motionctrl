@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/andreacioni/aescrypt"
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/utils"
 
@@ -265,6 +266,10 @@ func archiveFiles(fileList []string) (string, error) {
 		return "", err
 	}
 
+	if err := removeFiles(fileList); err != nil {
+		return "", err
+	}
+
 	glg.Debugf("Archive file created:%s", archiveFileName)
 
 	return archiveFilePath, nil
@@ -273,8 +278,14 @@ func archiveFiles(fileList []string) (string, error) {
 func encryptAndUpload(filePath string, key string) error {
 	var err error
 
-	if key != "" { //TODO
+	if key != "" {
+		glg.Debugf("Encryption enabled for file: %s", filePath)
 
+		aesFilePath := filePath + ".aes"
+		if err = aescrypt.New(key).Encrypt(filePath, aesFilePath); err != nil {
+			return fmt.Errorf("Failed to encrypt file %s: %v", filePath, aesFilePath)
+		}
+		filePath = aesFilePath
 	}
 
 	err = uploadService.Upload(filePath)
