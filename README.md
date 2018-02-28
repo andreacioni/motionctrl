@@ -77,5 +77,5 @@ __FAQ__
  - How can I obtain valid cert/key to enable HTTPS support?
    - BLA BLA BLA
    
- - How can I enable Google Drive backup?
+ - How can I open encrypted beckup files?
    - BLA BLA BLA
