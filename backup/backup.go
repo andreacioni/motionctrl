@@ -271,10 +271,6 @@ func archiveFiles(fileList []string) (string, error) {
 		return "", err
 	}
 
-	if err := removeFiles(fileList); err != nil { //Mantain archive, drop original files
-		return "", err
-	}
-
 	glg.Debugf("Archive file created:%s", archiveFileName)
 
 	return archiveFilePath, nil
@@ -290,6 +286,8 @@ func encryptAndUpload(filePath string, key string) (string, error) {
 		if err = aescrypt.New(key).Encrypt(filePath, aesFilePath); err != nil {
 			return "", fmt.Errorf("Failed to encrypt file %s: %v", filePath, aesFilePath)
 		}
+
+		glg.Debugf("Removing unencrypted file: %s", filePath)
 
 		if err = os.Remove(filePath); err != nil { //Remove original unencrypted file
 			return "", fmt.Errorf("Failed to remove original file %s: %v", filePath, aesFilePath)
