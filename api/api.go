@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kpango/glg"
 
+	"github.com/andreacioni/motionctrl/backup"
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/motion"
 	"github.com/andreacioni/motionctrl/utils"
@@ -225,5 +226,5 @@ func writeConfigHandler(c *gin.Context) {
 }
 
 func backupStatus(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"enabled": false}) //TODO
+	c.JSON(http.StatusOK, gin.H{"status": backup.GetStatus()}) //TODO
 }

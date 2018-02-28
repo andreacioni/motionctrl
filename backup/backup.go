@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/andreacioni/motionctrl/config"
@@ -24,13 +25,13 @@ type UploadService interface {
 	Upload(string) error
 }
 
-type State int
+type State string
 
 const (
-	StateActiveIdle State = iota
-	StateActiveRunning
-	StateActiveErrored
-	StateDeactivated
+	StateActiveIdle    State = "ACTIVE_IDLE"
+	StateActiveRunning State = "ACTIVE_RUNNING"
+	StateActiveErrored State = "ACTIVE_ERRORED"
+	StateDeactivated   State = "NOT_ACTIVE"
 )
 
 const (
@@ -46,12 +47,13 @@ var (
 
 	cronSheduler *cron.Cron
 
-	mu      trylock.Mutex
-	runFlag = abool.New()
+	workerMutex trylock.Mutex
+	runFlag     = abool.New()
 
 	uploadService UploadService
 
-	backupStatus State
+	backupStatus     State
+	backupStateMutex sync.Mutex
 )
 
 func Init(backConf config.Backup, targetDir string) {
@@ -82,11 +84,13 @@ func Init(backConf config.Backup, targetDir string) {
 		glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
 	}
 
-	backupStatus = StateActiveIdle
+	setStatus(StateActiveIdle)
 	runFlag.Set()
 }
 
-func Status() State {
+func GetStatus() State {
+	backupStateMutex.Lock()
+	defer backupStateMutex.Unlock()
 	return backupStatus
 }
 
@@ -106,8 +110,14 @@ func Shutdown() {
 		cronSheduler = nil
 	}
 
-	backupStatus = StateDeactivated
+	setStatus(StateDeactivated)
 
+}
+
+func setStatus(status State) {
+	backupStateMutex.Lock()
+	defer backupStateMutex.Unlock()
+	backupStatus = status
 }
 
 func setupCronSheduler() error {
@@ -190,7 +200,7 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 	case GoogleDriveMethod:
 		return &GoogleDriveBackupService{}, nil
 	case TestMockMethod:
-		return &MockBackupService{}, nil
+		return &GoogleDriveBackupService{}, nil
 	default:
 		err = fmt.Errorf("Backup method not recognized")
 	}
@@ -291,10 +301,10 @@ func removeFiles(filePath []string) error {
 
 func backupWorker() {
 	if runFlag.IsSet() {
-		if mu.TryLock() {
-			defer mu.Unlock()
+		if workerMutex.TryLock() {
+			defer workerMutex.Unlock()
 			glg.Debug("Backup service worker is running now")
-			backupStatus = StateActiveRunning
+			setStatus(StateActiveRunning)
 
 			fileList, err := listFile(targetDirectory)
 
@@ -302,7 +312,7 @@ func backupWorker() {
 
 			if err != nil {
 				glg.Error(err)
-				backupStatus = StateActiveErrored
+				setStatus(StateActiveErrored)
 			} else {
 				if backupConfig.Archive { //Group file into archive, encrypt (if needed) and upload
 					utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
@@ -338,7 +348,7 @@ func backupWorker() {
 
 					if err != nil {
 						glg.Error(err)
-						backupStatus = StateActiveErrored
+						setStatus(StateActiveErrored)
 					}
 
 					if !runFlag.IsSet() {
@@ -351,7 +361,7 @@ func backupWorker() {
 
 						if err != nil {
 							glg.Error(err)
-							backupStatus = StateActiveErrored
+							setStatus(StateActiveErrored)
 							return
 						}
 
@@ -360,7 +370,7 @@ func backupWorker() {
 
 							if err != nil {
 								glg.Error(err)
-								backupStatus = StateActiveErrored
+								setStatus(StateActiveErrored)
 								return
 							}
 						}

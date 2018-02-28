@@ -34,7 +34,16 @@ In order to execute motionctrl you need a valid JSON configuration file, an exam
     "ssl" : {
         "key" : "/path/to/key.key",
         "cert" : "/path/to/cert.pem"
-    }
+    },
+
+    "backup" :  {
+        "when" : "@every 1m",
+        "method" : "google",
+        "encryptionKey" : "NOT YET IMPLEMENTED",
+        "archive":true,
+        "filePerArchive" : 10,
+        "keepLocalCopy":false
+    },
 }
 ```
 

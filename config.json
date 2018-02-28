@@ -12,10 +12,10 @@
     },
 
     "backup" :  {
-        "when" : "* * * * *",
+        "when" : "@every 1m",
         "method" : "google",
         "encryptionKey" : "",
-        "archive":false,
+        "archive":true,
         "filePerArchive" : 10,
         "keepLocalCopy":false
     },
@@ -23,7 +23,8 @@
     "notify" : [
         {
             "method" : "telegram",
-            "token" : ""
+            "token" : "",
+            "to": []
         }
     ]
 }
