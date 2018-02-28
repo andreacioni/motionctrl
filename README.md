@@ -39,7 +39,7 @@ In order to execute motionctrl you need a valid JSON configuration file, an exam
     "backup" :  {
         "when" : "@every 1m",
         "method" : "google",
-        "encryptionKey" : "NOT YET IMPLEMENTED",
+        "encryptionKey" : "super_secret_key",
         "archive":true,
         "filePerArchive" : 10,
         "keepLocalCopy":false
