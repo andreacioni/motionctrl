@@ -27,7 +27,7 @@ func TestListFiles(t *testing.T) {
 	_, err := os.Create("../testfile")
 	require.NoError(t, err)
 
-	list, err := listFile("../")
+	_, list, _, err := listFile("../")
 	require.NoError(t, err)
 	require.EqualValues(t, 5, len(list))
 	fmt.Printf("%+v\n", list)
@@ -66,7 +66,7 @@ func TestJoinArchive(t *testing.T) {
 }
 
 func TestArchive(t *testing.T) {
-	fileList, err := listFile(".")
+	_, fileList, _, err := listFile(".")
 	require.NoError(t, err)
 	fmt.Println(fileList)
 

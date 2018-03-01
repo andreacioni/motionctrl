@@ -158,7 +158,11 @@ func setupDirectoryWatcher() error {
 			for {
 				select {
 				case <-dirWatcher.Event:
-					folderSize := evaluateFolderSize()
+					_, _, folderSize, err := listFile(targetDirectory)
+					if err != nil {
+						glg.Errorf("Failed to evaluate folder size: %v", err)
+					}
+
 					glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
 					if folderSize > maxFolderSize {
 						go backupWorker()
@@ -188,17 +192,6 @@ func setupDirectoryWatcher() error {
 
 func backuppableFile(f os.FileInfo) bool {
 	return f != nil && f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), ".") && f.ModTime().Add(time.Second*30).Before(time.Now())
-}
-
-func evaluateFolderSize() int64 {
-	var totSize int64
-	for _, fInfo := range dirWatcher.WatchedFiles() {
-		if !fInfo.IsDir() {
-			totSize += fInfo.Size()
-		}
-	}
-
-	return totSize
 }
 
 func buildUploadService(uploadMethod string) (UploadService, error) {
@@ -278,7 +271,7 @@ func archiveFiles(fileList []string) (string, error) {
 		return "", err
 	}
 
-	glg.Debugf("Archive file created:%s", archiveFileName)
+	glg.Debugf("Archive file created:%s", archiveFilePath)
 
 	return archiveFilePath, nil
 }

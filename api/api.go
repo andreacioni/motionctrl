@@ -226,5 +226,5 @@ func writeConfigHandler(c *gin.Context) {
 }
 
 func backupStatus(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": backup.GetStatus()}) //TODO
+	c.JSON(http.StatusOK, gin.H{"status": backup.GetStatus()})
 }
