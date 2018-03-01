@@ -24,9 +24,17 @@ func TestBackupSize(t *testing.T) {
 }
 
 func TestListFiles(t *testing.T) {
+	_, err := os.Create("../testfile")
+	require.NoError(t, err)
+
 	list, err := listFile("../")
 	require.NoError(t, err)
+	require.EqualValues(t, 5, len(list))
 	fmt.Printf("%+v\n", list)
+
+	err = os.Remove("../testfile")
+	require.NoError(t, err)
+
 }
 
 func TestBackupMethod(t *testing.T) {

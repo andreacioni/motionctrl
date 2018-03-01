@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,7 +33,6 @@ type State string
 const (
 	StateActiveIdle    State = "ACTIVE_IDLE"
 	StateActiveRunning State = "ACTIVE_RUNNING"
-	StateActiveErrored State = "ACTIVE_ERRORED"
 	StateDeactivated   State = "NOT_ACTIVE"
 )
 
@@ -150,7 +150,7 @@ func setupDirectoryWatcher() error {
 
 		dirWatcher.FilterOps(watcher.Create)
 
-		if err := dirWatcher.AddRecursive(targetDirectory); err != nil {
+		if err := dirWatcher.Add(targetDirectory); err != nil {
 			return err
 		}
 
@@ -166,6 +166,7 @@ func setupDirectoryWatcher() error {
 				case err := <-dirWatcher.Error:
 					glg.Error(err)
 				case <-dirWatcher.Closed:
+					glg.Debug("Directory watcher is closing")
 					return
 				}
 			}
@@ -211,21 +212,23 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 
 func listFile(targetDirectory string) ([]string, error) {
 	fileList := []string{}
-	err := filepath.Walk(targetDirectory, func(path string, info os.FileInfo, err error) error {
-		if err == nil {
-			if !info.IsDir() {
-				fullPath, err := filepath.Abs(path)
-				if err != nil {
-					glg.Error(err)
-				} else {
-					fileList = append(fileList, fullPath)
-				}
 
+	fileInfo, err := ioutil.ReadDir(targetDirectory)
+
+	if err != nil {
+		return nil, err
+	}
+
+	//We get only regular files (no directory, symbolic files, hidden files) and older than 30 sec
+	for _, f := range fileInfo {
+		if f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), ".") && f.ModTime().Add(time.Second*30).Before(time.Now()) {
+			absPath, err := filepath.Abs(filepath.Join(targetDirectory, f.Name()))
+			if err != nil {
+				return nil, err
 			}
+			fileList = append(fileList, absPath)
 		}
-
-		return err
-	})
+	}
 
 	return fileList, err
 
@@ -292,13 +295,15 @@ func encryptAndUpload(filePath string, key string) (string, error) {
 		filePath = aesFilePath
 	}
 
+	glg.Debugf("Uploading file: %s", filePath)
+
 	err = uploadService.Upload(filePath)
 
 	if err != nil {
 		return "", err
 	}
 
-	glg.Debugf("Uploaded file: %s", filePath)
+	glg.Debugf("Uploaded")
 
 	return filePath, nil
 }
@@ -328,7 +333,6 @@ func backupWorker() {
 
 			if err != nil {
 				glg.Error(err)
-				setStatus(StateActiveErrored)
 			} else {
 				if backupConfig.Archive { //Group file into archive, encrypt (if needed) and upload
 					utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
@@ -347,6 +351,7 @@ func backupWorker() {
 						subFileList = append(subFileList, archive) //Remove archive file and photo
 
 						if err = removeFiles(subFileList); err != nil {
+							glg.Error(err)
 							return false
 						}
 
@@ -359,10 +364,11 @@ func backupWorker() {
 
 					if err != nil {
 						glg.Error(err)
-						setStatus(StateActiveErrored)
+						return
 					}
 
 					if !runFlag.IsSet() {
+						glg.Warn("Run flag disabled")
 						return
 					}
 				} else { //Encrypt file (if needed) and upload. No archive
@@ -370,17 +376,16 @@ func backupWorker() {
 
 						if f, err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
 							glg.Error(err)
-							setStatus(StateActiveErrored)
 							return
 						}
 
 						if err = os.Remove(f); err != nil {
 							glg.Error(err)
-							setStatus(StateActiveErrored)
 							return
 						}
 
 						if !runFlag.IsSet() {
+							glg.Warn("Run flag disabled")
 							return
 						}
 					}
