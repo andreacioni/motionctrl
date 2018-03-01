@@ -63,7 +63,7 @@ func needMotionUp(c *gin.Context) {
 		motionStarted := motion.IsStarted()
 
 		if !motionStarted {
-			c.JSON(http.StatusConflict, gin.H{"message": "motion was not started yet"})
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "motion was not started yet"})
 			return
 		}
 	}
@@ -161,7 +161,7 @@ func takeSnapshot(c *gin.Context) {
 
 func listConfigHandler(c *gin.Context) {
 	configMap, err := motion.ConfigList()
-	glg.Log(c.Request.URL)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
