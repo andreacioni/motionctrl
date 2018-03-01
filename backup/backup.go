@@ -186,6 +186,10 @@ func setupDirectoryWatcher() error {
 
 }
 
+func backuppableFile(f os.FileInfo) bool {
+	return f != nil && f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), ".") && f.ModTime().Add(time.Second*30).Before(time.Now())
+}
+
 func evaluateFolderSize() int64 {
 	var totSize int64
 	for _, fInfo := range dirWatcher.WatchedFiles() {
@@ -210,27 +214,31 @@ func buildUploadService(uploadMethod string) (UploadService, error) {
 	return nil, err
 }
 
-func listFile(targetDirectory string) ([]string, error) {
+func listFile(targetDirectory string) ([]os.FileInfo, []string, int64, error) {
 	fileList := []string{}
+	fileInfo := []os.FileInfo{}
+	var folderSize int64
 
-	fileInfo, err := ioutil.ReadDir(targetDirectory)
+	fInfo, err := ioutil.ReadDir(targetDirectory)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, 0, err
 	}
 
 	//We get only regular files (no directory, symbolic files, hidden files) and older than 30 sec
-	for _, f := range fileInfo {
-		if f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), ".") && f.ModTime().Add(time.Second*30).Before(time.Now()) {
+	for _, f := range fInfo {
+		if backuppableFile(f) {
 			absPath, err := filepath.Abs(filepath.Join(targetDirectory, f.Name()))
 			if err != nil {
-				return nil, err
+				return nil, nil, 0, err
 			}
 			fileList = append(fileList, absPath)
+			fileInfo = append(fileInfo, f)
+			folderSize += f.Size()
 		}
 	}
 
-	return fileList, err
+	return fileInfo, fileList, folderSize, err
 
 }
 
@@ -327,7 +335,7 @@ func backupWorker() {
 			glg.Debug("Backup service worker is running now")
 			setStatus(StateActiveRunning)
 
-			fileList, err := listFile(targetDirectory)
+			_, fileList, _, err := listFile(targetDirectory)
 
 			glg.Debugf("Backup file list: %+v", fileList)
 
@@ -351,11 +359,11 @@ func backupWorker() {
 						subFileList = append(subFileList, archive) //Remove archive file and photo
 
 						if err = removeFiles(subFileList); err != nil {
-							glg.Error(err)
 							return false
 						}
 
 						if !runFlag.IsSet() {
+							glg.Warn("Run flag disabled")
 							return false
 						}
 

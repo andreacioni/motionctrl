@@ -62,7 +62,7 @@ func TestExtToMime(t *testing.T) {
 }
 
 func TestJoinArchive(t *testing.T) {
-	fmt.Println(filepath.Join(os.TempDir(), time.Now().Format("20060102_150405")+"tar.gz"))
+	fmt.Println(filepath.Join(os.TempDir(), time.Now().Format("20060102_150405")+".tar.gz"))
 }
 
 func TestArchive(t *testing.T) {
