@@ -12,6 +12,8 @@ const (
 	DetectionPausedRegex  = "Camera [0-9]+ Detection paused\nDone\n"
 	DetectionActiveRegex  = "Camera [0-9]+ Detection status ACTIVE"
 	DetectionPauseRegex   = "Camera [0-9]+ Detection status PAUSE"
+
+	SnapshotDetectionRegex = "snapshot for thread [0-9]\nDone"
 )
 
 func IsMotionDetectionEnabled() (bool, error) {

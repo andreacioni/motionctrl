@@ -26,7 +26,8 @@ var handlersMap = map[string]func(*gin.Context){
 	"/detection/status": isMotionDetectionEnabled,
 	"/detection/start":  startDetectionHandler,
 	"/detection/stop":   stopDetectionHandler,
-	"/camera":           proxyStream,
+	"/camera/stream":    proxyStream,
+	"/camera/snapshot":  takeSnapshot,
 	"/config/list":      listConfigHandler,
 	"/config/set":       setConfigHandler,
 	"/config/get":       getConfigHandler,
@@ -146,6 +147,16 @@ func proxyStream(c *gin.Context) {
 	url, _ := url.Parse(motion.GetStreamBaseURL())
 	proxy := httputil.NewSingleHostReverseProxy(url)
 	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+func takeSnapshot(c *gin.Context) {
+	err, snapFile := motion.Snapshot()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	} else {
+		c.File(snapFile)
+	}
 }
 
 func listConfigHandler(c *gin.Context) {
