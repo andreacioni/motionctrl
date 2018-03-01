@@ -150,7 +150,7 @@ func proxyStream(c *gin.Context) {
 }
 
 func takeSnapshot(c *gin.Context) {
-	err, snapFile := motion.Snapshot()
+	snapFile, err := motion.Snapshot()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
