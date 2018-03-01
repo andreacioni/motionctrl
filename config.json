@@ -12,7 +12,7 @@
     },
 
     "backup" :  {
-        "when" : "@every 1m",
+        "when" : "10MB",
         "method" : "google",
         "encryptionKey" : "this!is!a!secret!password",
         "archive":true,

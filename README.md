@@ -7,7 +7,7 @@ __Why motionctrl?__
 motionctlr allows you to:
 - start/stop motion through an easy REST api service
 - provide only one point to access both stream and webcontrol
-- improve motion security with HTTPS
+- improve motion security with HTTPS (TODO)
 - managing motion with JSON REST api that replace the old text webcontrol interface integrated in motion
 - backup old image/video in Google Drive* (archive & encryption support)
 - notify event through Telegram* to every device you want (TODO)
