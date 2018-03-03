@@ -12,7 +12,7 @@ func Snapshot() (string, error) {
 		if !utils.RegexMustMatch(SnapshotDetectionRegex, body) {
 			return "", fmt.Errorf("unable to take snapshot (%s)", body)
 		}
-		return filepath.Join(ConfigGetRO(ConfigTargetDir), "lastsnap.jpg"), nil
+		return filepath.Join(ConfigGetRO(ConfigTargetDir), "lastsnap.jpg"), nil //TODO jpg not the only extension
 	})
 
 	return snapFile.(string), err
