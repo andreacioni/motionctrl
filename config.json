@@ -19,11 +19,9 @@
         "filePerArchive" : 10
     },
 
-    "notify" : [
-        {
-            "method" : "telegram",
-            "token" : "",
-            "to": []
-        }
-    ]
+    "notify" : {
+        "method" : "telegram",
+        "token" : "API TOKEN",
+        "to": ["12345"]
+    }
 }

@@ -23,6 +23,11 @@ func TestBackupSize(t *testing.T) {
 	Shutdown()
 }
 
+func TestNoBackupDefined(t *testing.T) {
+	_, err := buildUploadService(config.Backup{})
+	require.Error(t, err)
+}
+
 func TestListFiles(t *testing.T) {
 	_, err := os.Create("../testfile")
 	require.NoError(t, err)
@@ -38,11 +43,11 @@ func TestListFiles(t *testing.T) {
 }
 
 func TestBackupMethod(t *testing.T) {
-	_, err := buildUploadService(GoogleDriveMethod)
+	_, err := buildUploadService(config.Backup{Method: GoogleDriveMethod})
 
 	require.NoError(t, err)
 
-	_, err = buildUploadService(TestMockMethod)
+	_, err = buildUploadService(config.Backup{Method: TestMockMethod})
 
 	require.NoError(t, err)
 }

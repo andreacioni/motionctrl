@@ -57,7 +57,7 @@ func Init() {
 
 func needMotionUp(c *gin.Context) {
 
-	/** Every request, except for /control* requests, need motion up and running**/
+	//Every request, except for /control* requests, need motion up and running
 
 	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/control") {
 		motionStarted := motion.IsStarted()

@@ -58,36 +58,32 @@ var (
 	backupStateMutex sync.Mutex
 )
 
-func Init(backConf config.Backup, targetDir string) {
-	backupConfig = backConf
+func Init(conf config.Backup, targetDir string) {
+	backupConfig = conf
 	targetDirectory = targetDir
 
-	glg.Debugf("Initializing backup service: %+v, target directory: %s", backConf, targetDir)
+	glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
 
-	err := setupCronSheduler()
+	uploadService, err := buildUploadService(backupConfig)
 
 	if err != nil {
-		err := setupDirectoryWatcher()
+		glg.Warn("Backup service won't be active")
+	} else {
 
-		if err != nil {
-			glg.Fatalf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+		if err = uploadService.Authenticate(); err != nil {
+			glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
 		}
+
+		if err = setupCronSheduler(backupConfig); err != nil {
+
+			if err = setupDirectoryWatcher(backupConfig, targetDir); err != nil {
+				glg.Fatalf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+			}
+		}
+
+		setStatus(StateActiveIdle)
+		runFlag.Set()
 	}
-
-	uploadService, err = buildUploadService(backConf.Method)
-
-	if err != nil {
-		glg.Fatal(err)
-	}
-
-	err = uploadService.Authenticate()
-
-	if err != nil {
-		glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
-	}
-
-	setStatus(StateActiveIdle)
-	runFlag.Set()
 }
 
 func GetStatus() State {
@@ -122,13 +118,13 @@ func setStatus(status State) {
 	backupStatus = status
 }
 
-func setupCronSheduler() error {
+func setupCronSheduler(conf config.Backup) error {
 	cronSheduler = cron.New()
 
-	err := cronSheduler.AddFunc(backupConfig.When, backupWorker)
+	err := cronSheduler.AddFunc(conf.When, backupWorker)
 
 	if err == nil {
-		glg.Infof("Cron job is started, running on: %s", backupConfig.When)
+		glg.Infof("Cron job is started, running on: %s", conf.When)
 		cronSheduler.Start()
 	} else {
 		cronSheduler = nil
@@ -137,12 +133,12 @@ func setupCronSheduler() error {
 	return err
 }
 
-func setupDirectoryWatcher() error {
+func setupDirectoryWatcher(conf config.Backup, outDirectory string) error {
 
-	maxFolderSize, err := utils.FromTextSize(backupConfig.When)
+	maxFolderSize, err := utils.FromTextSize(conf.When)
 
 	if err == nil {
-		glg.Infof("Setup directory watcher on: %s, max size: %d bytes", targetDirectory, maxFolderSize)
+		glg.Infof("Setup directory watcher on: %s, max size: %d bytes", outDirectory, maxFolderSize)
 
 		dirWatcher = watcher.New()
 
@@ -150,7 +146,7 @@ func setupDirectoryWatcher() error {
 
 		dirWatcher.FilterOps(watcher.Create)
 
-		if err := dirWatcher.Add(targetDirectory); err != nil {
+		if err := dirWatcher.Add(outDirectory); err != nil {
 			return err
 		}
 
@@ -158,7 +154,7 @@ func setupDirectoryWatcher() error {
 			for {
 				select {
 				case <-dirWatcher.Event:
-					_, _, folderSize, err := listFile(targetDirectory)
+					_, _, folderSize, err := listFile(outDirectory)
 					if err != nil {
 						glg.Errorf("Failed to evaluate folder size: %v", err)
 					}
@@ -194,15 +190,15 @@ func backuppableFile(f os.FileInfo) bool {
 	return f != nil && f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), ".") && f.ModTime().Add(time.Second*30).Before(time.Now())
 }
 
-func buildUploadService(uploadMethod string) (UploadService, error) {
+func buildUploadService(conf config.Backup) (UploadService, error) {
 	var err error
-	switch uploadMethod {
+	switch conf.Method {
 	case GoogleDriveMethod:
 		return &GoogleDriveBackupService{}, nil
 	case TestMockMethod:
 		return &MockBackupService{}, nil
 	default:
-		err = fmt.Errorf("Backup method not recognized")
+		err = fmt.Errorf("Backup method not found or invalid")
 	}
 	return nil, err
 }
