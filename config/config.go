@@ -12,13 +12,13 @@ const (
 )
 
 type Configuration struct {
-	Address          string   `json:"address"`
-	Port             int      `json:"port"`
-	MotionConfigFile string   `json:"motionConfigFile"`
-	Username         string   `json:"username"`
-	Password         string   `json:"password"`
-	Backup           Backup   `json:"backup"`
-	Notify           []Notify `json:"notify"`
+	Address          string `json:"address"`
+	Port             int    `json:"port"`
+	MotionConfigFile string `json:"motionConfigFile"`
+	Username         string `json:"username"`
+	Password         string `json:"password"`
+	Backup           Backup `json:"backup"`
+	Notify           Notify `json:"notify"`
 }
 
 type Backup struct {
@@ -30,8 +30,9 @@ type Backup struct {
 }
 
 type Notify struct {
-	Method string `json:"method"`
-	Token  string `json:"token"`
+	Method string   `json:"method"`
+	Token  string   `json:"token"`
+	To     []string `json:"to"`
 }
 
 var conf Configuration
@@ -61,6 +62,6 @@ func GetBackupConfig() Backup {
 	return conf.Backup
 }
 
-func GeNotifyConfig() []Notify {
+func GetNotifyConfig() Notify {
 	return conf.Notify
 }
