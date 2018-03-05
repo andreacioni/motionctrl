@@ -78,7 +78,7 @@ func MotionDetectedStart() {
 
 	if notifyService != nil {
 		diff := notifyConfiguration.Photo - photoLimitSemaphore.GetCount()
-		if diff != 0 {
+		if diff != notifyConfiguration.Photo {
 			photoLimitSemaphore.Release(diff)
 		}
 	} else {
