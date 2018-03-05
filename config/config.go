@@ -30,9 +30,11 @@ type Backup struct {
 }
 
 type Notify struct {
-	Method string   `json:"method"`
-	Token  string   `json:"token"`
-	To     []string `json:"to"`
+	Method  string   `json:"method"`
+	Token   string   `json:"token"`
+	To      []string `json:"to"`
+	Message string   `json:"message"`
+	Photo   int      `json:"photo"`
 }
 
 var conf Configuration
