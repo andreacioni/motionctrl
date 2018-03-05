@@ -71,14 +71,20 @@ func Init() {
 
 // isLocalhost middlewares permit requests only from localhost
 func isLocalhost(c *gin.Context) {
-	ip := net.ParseIP(c.Request.RemoteAddr)
+	ipStr, _, err := net.SplitHostPort(c.Request.RemoteAddr)
 
-	if ip == nil || !ip.IsLoopback() {
-		glg.Warnf("Rejecting request to %s, IP: %s is not authorized", c.Request.URL.Path, c.Request.RemoteAddr)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "call to /internal/* api is allowed only from localhost"})
-	} else {
-		glg.Debugf("Accepting /internal api call from %s", c.Request.RemoteAddr)
+	if err != nil {
+
+		ip := net.ParseIP(ipStr)
+
+		if ip == nil || !ip.IsLoopback() {
+			glg.Warnf("Rejecting request to %s, IP: %s is not authorized", c.Request.URL.Path, c.Request.RemoteAddr)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "call to /internal/* api is allowed only from localhost"})
+		} else {
+			glg.Debugf("Accepting /internal api call from %s", c.Request.RemoteAddr)
+		}
 	}
+
 }
 
 // needMotionUp Every request, except for /control* requests, need motion up and running
