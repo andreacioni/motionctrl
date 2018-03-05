@@ -29,7 +29,7 @@ var internalHandlersMap = map[string]MethodHandler{
 	"/event/start":           MethodHandler{method: http.MethodGet, f: eventStart},
 	"/event/end":             MethodHandler{method: http.MethodGet, f: eventEnd},
 	"/event/motion/detected": MethodHandler{method: http.MethodGet, f: motionDetected},
-	"/event/picture/saved":   MethodHandler{method: http.MethodPost, f: pictureSaved},
+	"/event/picture/saved":   MethodHandler{method: http.MethodGet, f: pictureSaved},
 }
 
 var handlersMap = map[string]MethodHandler{

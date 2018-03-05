@@ -46,6 +46,12 @@ func Init(conf config.Notify) {
 	}
 }
 
+func PhotoSaved(filepath string) {
+	if notifyService != nil {
+
+	}
+}
+
 func buildNotifyService(conf config.Notify) (NotifyService, error) {
 	switch conf.Method {
 	case TelegramNotifyMethod:
