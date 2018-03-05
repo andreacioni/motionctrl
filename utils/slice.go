@@ -1,6 +1,9 @@
 package utils
 
-import "reflect"
+import (
+	"reflect"
+	"strconv"
+)
 
 func InSlice(val interface{}, array interface{}) (exists bool, index int) {
 	exists = false
@@ -37,4 +40,18 @@ func BlockSlideSlice(array interface{}, blockSize int, f func(interface{}) bool)
 			}
 		}
 	}
+}
+
+func ToInt64Slice(array []string) ([]int64, error) {
+	var err error
+	chatids := make([]int64, len(array))
+	for i, v := range array {
+		chatids[i], err = strconv.ParseInt(v, 10, 64)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return chatids, nil
 }

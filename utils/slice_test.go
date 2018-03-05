@@ -38,3 +38,11 @@ func TestBlockSlideSlice(t *testing.T) {
 		return true
 	})
 }
+
+func TestToInt64Slice(t *testing.T) {
+	conv, err := ToInt64Slice([]string{"1234", "56325", "678", "2357", "3566", "-1"})
+	require.NoError(t, err)
+
+	require.EqualValues(t, []int64{1234, 56325, 678, 2357, 3566, -1}, conv)
+
+}
