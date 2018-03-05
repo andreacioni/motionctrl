@@ -54,14 +54,7 @@ func Init(conf config.Notify) {
 			if err = notifyService.Authenticate(); err != nil {
 				glg.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 			} else {
-				photoLimitSemaphore = semaphore.New(0)
-				if conf.Photo > 0 {
-					glg.Debug("Sending %d photo when detecting motion", conf.Photo)
-					photoLimitSemaphore.SetLimit(conf.Photo)
-				} else {
-					glg.Debug("No photo will be sent on motion recognized")
-				}
-
+				photoLimitSemaphore = semaphore.New(conf.Photo)
 			}
 		}
 	}
