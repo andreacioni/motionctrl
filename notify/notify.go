@@ -76,7 +76,7 @@ func MotionDetectedStart() {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if notifyService == nil {
+	if notifyService != nil {
 		photoLimitSemaphore.SetLimit(notifyConfiguration.Photo)
 	} else {
 		glg.Warn("No notify service is available")
