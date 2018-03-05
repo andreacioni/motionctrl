@@ -88,7 +88,7 @@ func MotionDetectedStop() {
 	defer mu.Unlock()
 
 	if notifyService != nil {
-		for !photoLimitSemaphore.TryAcquire(1) { //Clear all
+		for photoLimitSemaphore.GetCount() > 0 && !photoLimitSemaphore.TryAcquire(1) { //Clear all
 		}
 	} else {
 		glg.Warn("No notify service is available")
