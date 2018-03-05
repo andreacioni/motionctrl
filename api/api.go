@@ -19,28 +19,34 @@ import (
 	"github.com/andreacioni/motionctrl/version"
 )
 
-var internalHandlersMap = map[string]func(*gin.Context){
-	"/event/start":           eventStart,
-	"/event/end":             eventEnd,
-	"/event/motion/detected": motionDetected,
-	"/event/picture/saved":   pictureSaved,
+// MethodHandler utility struct that contains method and associated handler
+type MethodHandler struct {
+	method string
+	f      func(*gin.Context)
 }
 
-var handlersMap = map[string]func(*gin.Context){
-	"/control/startup":  startHandler,
-	"/control/shutdown": stopHandler,
-	"/control/status":   statusHandler,
-	"/control/restart":  restartHandler,
-	"/detection/status": isMotionDetectionEnabled,
-	"/detection/start":  startDetectionHandler,
-	"/detection/stop":   stopDetectionHandler,
-	"/camera/stream":    proxyStream,
-	"/camera/snapshot":  takeSnapshot,
-	"/config/list":      listConfigHandler,
-	"/config/set":       setConfigHandler,
-	"/config/get":       getConfigHandler,
-	"/config/write":     writeConfigHandler,
-	"/backup/status":    backupStatus,
+var internalHandlersMap = map[string]MethodHandler{
+	"/event/start":           MethodHandler{method: http.MethodGet, f: eventStart},
+	"/event/end":             MethodHandler{method: http.MethodGet, f: eventEnd},
+	"/event/motion/detected": MethodHandler{method: http.MethodGet, f: motionDetected},
+	"/event/picture/saved":   MethodHandler{method: http.MethodPost, f: pictureSaved},
+}
+
+var handlersMap = map[string]MethodHandler{
+	"/control/startup":  MethodHandler{method: http.MethodGet, f: startHandler},
+	"/control/shutdown": MethodHandler{method: http.MethodGet, f: stopHandler},
+	"/control/status":   MethodHandler{method: http.MethodGet, f: statusHandler},
+	"/control/restart":  MethodHandler{method: http.MethodGet, f: restartHandler},
+	"/detection/status": MethodHandler{method: http.MethodGet, f: isMotionDetectionEnabled},
+	"/detection/start":  MethodHandler{method: http.MethodGet, f: startDetectionHandler},
+	"/detection/stop":   MethodHandler{method: http.MethodGet, f: stopDetectionHandler},
+	"/camera/stream":    MethodHandler{method: http.MethodGet, f: proxyStream},
+	"/camera/snapshot":  MethodHandler{method: http.MethodGet, f: takeSnapshot},
+	"/config/list":      MethodHandler{method: http.MethodGet, f: listConfigHandler},
+	"/config/set":       MethodHandler{method: http.MethodGet, f: setConfigHandler},
+	"/config/get":       MethodHandler{method: http.MethodGet, f: getConfigHandler},
+	"/config/write":     MethodHandler{method: http.MethodGet, f: writeConfigHandler},
+	"/backup/status":    MethodHandler{method: http.MethodGet, f: backupStatus},
 }
 
 func Init() {
@@ -51,7 +57,7 @@ func Init() {
 	internal := r.Group("/internal", isLocalhost)
 
 	for path, handler := range internalHandlersMap {
-		internal.GET(path, handler)
+		internal.Handle(handler.method, path, handler.f)
 	}
 
 	if config.GetConfig().Username != "" && config.GetConfig().Password != "" {
@@ -63,7 +69,7 @@ func Init() {
 	}
 
 	for path, handler := range handlersMap {
-		group.GET(path, handler)
+		group.Handle(handler.method, path, handler.f)
 	}
 
 	r.Run(fmt.Sprintf("%s:%d", config.GetConfig().Address, config.GetConfig().Port))
