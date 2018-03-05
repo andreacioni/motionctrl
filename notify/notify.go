@@ -2,6 +2,7 @@ package notify
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/andreacioni/motionctrl/utils"
 
@@ -31,9 +32,14 @@ var (
 	notifyService NotifyService
 
 	photoLimitSemaphore semaphore.Semaphore
+
+	mu sync.Mutex
 )
 
 func Init(conf config.Notify) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	var err error
 	notifyConfiguration = conf
 
@@ -47,12 +53,15 @@ func Init(conf config.Notify) {
 		if err = notifyService.Authenticate(); err != nil {
 			glg.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 		} else {
-
+			photoLimitSemaphore = semaphore.New(0)
 		}
 	}
 }
 
 func Shutdown() {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if notifyService != nil {
 		notifyService.Stop()
 		notifyService = nil
@@ -61,29 +70,39 @@ func Shutdown() {
 	notifyConfiguration = config.Notify{}
 }
 
-func Ready() bool {
-	return notifyService != nil
-}
-
 func MotionDetectedStart() {
-	if Ready() {
-		photoLimitSemaphore = semaphore.New(notifyConfiguration.Photo)
+	mu.Lock()
+	defer mu.Unlock()
+
+	if notifyService != nil {
+		photoLimitSemaphore.Release(notifyConfiguration.Photo)
 	}
 }
 
 func MotionDetectedStop() {
-	if Ready() {
-		photoLimitSemaphore = nil
+	mu.Lock()
+	defer mu.Unlock()
+
+	if notifyService != nil {
+		for !photoLimitSemaphore.TryAcquire(1) { //Clear all
+		}
 	}
 }
 
 func PhotoSaved(filepath string) {
-	if Ready() {
+	mu.Lock()
+
+	if notifyService != nil {
+		mu.Unlock()
 		if photoLimitSemaphore.TryAcquire(1) {
 			if err := notifyService.Notify(filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
 			}
+		} else {
+			glg.Warnf("Photo limit reached, this one won't be sent")
 		}
+	} else {
+		mu.Unlock()
 	}
 }
 
