@@ -106,7 +106,6 @@ func PhotoSaved(filepath string) {
 	defer mu.Unlock()
 
 	if notifyService != nil {
-		glg.Debug(photoLimitSemaphore.AvailablePermits())
 		if photoLimitSemaphore.AcquireWithin(1, time.Second) {
 			if err := notifyService.Notify(filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
