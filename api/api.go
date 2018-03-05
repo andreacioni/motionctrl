@@ -18,6 +18,13 @@ import (
 	"github.com/andreacioni/motionctrl/version"
 )
 
+var internalHandlersMap = map[string]func(*gin.Context){
+	"/event/start":           eventStart,
+	"/event/end":             eventEnd,
+	"/event/motion/detected": motionDetected,
+	"/event/picture/saved":   pictureSaved,
+}
+
 var handlersMap = map[string]func(*gin.Context){
 	"/control/startup":  startHandler,
 	"/control/shutdown": stopHandler,
@@ -40,6 +47,12 @@ func Init() {
 	var group *gin.RouterGroup
 	r := gin.Default()
 
+	internal := r.Group("/internal", isLocalhost)
+
+	for path, handler := range internalHandlersMap {
+		internal.GET(path, handler)
+	}
+
 	if config.GetConfig().Username != "" && config.GetConfig().Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
 		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.GetConfig().Username: config.GetConfig().Password}), needMotionUp)
@@ -48,17 +61,20 @@ func Init() {
 		group = r.Group("/", needMotionUp)
 	}
 
-	for k, v := range handlersMap {
-		group.GET(k, v)
+	for path, handler := range handlersMap {
+		group.GET(path, handler)
 	}
 
 	r.Run(fmt.Sprintf("%s:%d", config.GetConfig().Address, config.GetConfig().Port))
 }
 
+// isLocalhost middlewares
+func isLocalhost(c *gin.Context) {
+
+}
+
+// needMotionUp Every request, except for /control* requests, need motion up and running
 func needMotionUp(c *gin.Context) {
-
-	//Every request, except for /control* requests, need motion up and running
-
 	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/control") {
 		motionStarted := motion.IsStarted()
 
