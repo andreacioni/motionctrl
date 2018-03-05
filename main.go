@@ -10,6 +10,7 @@ import (
 	"github.com/andreacioni/motionctrl/backup"
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/motion"
+	"github.com/andreacioni/motionctrl/notify"
 	"github.com/andreacioni/motionctrl/version"
 )
 
@@ -37,6 +38,9 @@ func main() {
 
 	//Initialize backup  (if enabled)
 	backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir))
+
+	//Initialize notify  (if enabled)
+	notify.Init(config.GetNotifyConfig())
 
 	//Initialize REST api
 	api.Init()
