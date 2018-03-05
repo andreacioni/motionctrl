@@ -10,7 +10,7 @@ import (
 
 type TelegramNotifyService struct {
 	apiToken string
-	chatIds  []string
+	chatIds  []int64
 
 	bot *tgbotapi.BotAPI
 }
@@ -30,5 +30,22 @@ func (n *TelegramNotifyService) Authenticate() error {
 }
 
 func (n *TelegramNotifyService) Notify(filename string) error {
+	var err error
+	for _, chatID := range n.chatIds {
+		photo := tgbotapi.NewPhotoUpload(chatID, filename)
+
+		if _, err = n.bot.Send(photo); err != nil {
+			err = glg.Errorf("Failed to send notify message to %d: %v", chatID, err)
+		}
+	}
+
+	return err
+}
+
+func (n *TelegramNotifyService) Stop() error {
+	n.bot = nil
+	n.apiToken = ""
+	n.chatIds = nil
+
 	return nil
 }
