@@ -54,6 +54,7 @@ func Init(conf config.Notify) {
 			glg.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 		} else {
 			photoLimitSemaphore = semaphore.New(0)
+			photoLimitSemaphore.SetLimit(conf.Photo)
 		}
 	}
 }
@@ -76,6 +77,8 @@ func MotionDetectedStart() {
 
 	if notifyService != nil {
 		photoLimitSemaphore.Release(notifyConfiguration.Photo)
+	} else {
+		glg.Warn("No notify service is available")
 	}
 }
 
@@ -86,14 +89,16 @@ func MotionDetectedStop() {
 	if notifyService != nil {
 		for !photoLimitSemaphore.TryAcquire(1) { //Clear all
 		}
+	} else {
+		glg.Warn("No notify service is available")
 	}
 }
 
 func PhotoSaved(filepath string) {
 	mu.Lock()
+	defer mu.Unlock()
 
 	if notifyService != nil {
-		mu.Unlock()
 		if photoLimitSemaphore.TryAcquire(1) {
 			if err := notifyService.Notify(filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
@@ -102,18 +107,19 @@ func PhotoSaved(filepath string) {
 			glg.Warnf("Photo limit reached, this one won't be sent")
 		}
 	} else {
-		mu.Unlock()
+		glg.Warn("No notify service is available")
 	}
 }
 
 func buildNotifyService(conf config.Notify) (NotifyService, error) {
 	switch conf.Method {
-	case TelegramNotifyMethod:
-		if chatids, err := utils.ToInt64Slice(conf.To); err != nil {
+	case TelegramNotifyMethod: //TODO following statemets should be moved to an appropriate factory
+		var chatids []int64
+		var err error
+		if chatids, err = utils.ToInt64Slice(conf.To); err != nil {
 			return nil, fmt.Errorf("Failed to convert chat IDs from string to int: %v", err)
-		} else {
-			return &TelegramNotifyService{apiToken: conf.Token, chatIds: chatids}, nil
 		}
+		return &TelegramNotifyService{apiToken: conf.Token, chatIds: chatids}, nil
 	case TestMockMethod:
 		return &MockNotifyService{}, nil
 	default:

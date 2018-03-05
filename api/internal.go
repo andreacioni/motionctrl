@@ -8,12 +8,12 @@ import (
 )
 
 func eventStart(c *gin.Context) {
-	glg.Debugf("Event start")
+	notify.MotionDetectedStart()
 }
 func eventEnd(c *gin.Context) {
-	glg.Debugf("Event end")
+	notify.MotionDetectedStop()
 }
-func motionDetected(c *gin.Context) {
+func motionDetected(c *gin.Context) { //TODO not sure this is useful by now
 	glg.Debugf("Motion detected")
 }
 
@@ -21,7 +21,7 @@ func pictureSaved(c *gin.Context) {
 	picturePath := c.Query("picturepath")
 
 	if picturePath != "" {
-		glg.Debugf("Picture saved in: %s")
+		glg.Debugf("Picture saved in: %s", picturePath)
 		notify.PhotoSaved(picturePath)
 	} else {
 		glg.Warnf("'picturepath' not found. Unable to know where picture is.")
