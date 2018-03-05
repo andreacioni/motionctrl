@@ -40,27 +40,29 @@ func Init(conf config.Notify) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	var err error
-	notifyConfiguration = conf
+	if notifyService == nil {
+		var err error
+		notifyConfiguration = conf
 
-	glg.Debugf("Initializing notify service: %+v", notifyConfiguration)
+		glg.Debugf("Initializing notify service: %+v", conf)
 
-	notifyService, err = buildNotifyService(notifyConfiguration)
+		notifyService, err = buildNotifyService(conf)
 
-	if err != nil {
-		glg.Warn("Notify service won't be active")
-	} else {
-		if err = notifyService.Authenticate(); err != nil {
-			glg.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
+		if err != nil {
+			glg.Warn("Notify service won't be active")
 		} else {
-			photoLimitSemaphore = semaphore.New(0)
-			if conf.Photo > 0 {
-				glg.Debug("Sending %d photo when detecting motion", conf.Photo)
-				photoLimitSemaphore.SetLimit(conf.Photo)
+			if err = notifyService.Authenticate(); err != nil {
+				glg.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 			} else {
-				glg.Debug("No photo will be sent on motion recognized")
-			}
+				photoLimitSemaphore = semaphore.New(0)
+				if conf.Photo > 0 {
+					glg.Debug("Sending %d photo when detecting motion", conf.Photo)
+					photoLimitSemaphore.SetLimit(conf.Photo)
+				} else {
+					glg.Debug("No photo will be sent on motion recognized")
+				}
 
+			}
 		}
 	}
 }
