@@ -18,77 +18,45 @@ func TestNotPresentParser(t *testing.T) {
 
 	value := configMap["this_is_not_present"]
 
-	if value != "" {
-		t.Error("Nil value")
-	}
+	require.Equal(t, "", value)
 }
 
 func TestCheck(t *testing.T) {
 	configMap, _ := parseConfig("motion_test.conf")
 	err := checkConfig(configMap)
 
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
-	if len(configMap) != 89 {
-		t.Error("Configuration parameters map must contain 89 elements")
-	}
+	require.Equal(t, 89, len(configMap), "Configuration parameters map must contain 89 elements")
 }
 
 func TestCheckInstall(t *testing.T) {
 	err := checkInstall()
 
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestStartStop(t *testing.T) {
-	Init("motion_test.conf", false, false)
+	require.NoError(t, Init("motion_test.conf", false, false))
 
-	err := Startup(false)
+	require.NoError(t, Startup(false))
 
-	if err != nil {
-		t.Error(err)
-	}
+	require.True(t, IsStarted())
 
-	if !IsStarted() {
-		t.Error("not started")
-	}
-
-	err = Shutdown()
-
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, Shutdown())
 }
 
 func TestRestart(t *testing.T) {
 
-	Init("motion_test.conf", false, false)
+	require.NoError(t, Init("motion_test.conf", false, false))
 
-	err := Startup(false)
+	require.NoError(t, Startup(false))
 
-	if err != nil {
-		t.Error(err)
-	}
+	require.True(t, IsStarted())
 
-	if !IsStarted() {
-		t.Error("not started")
-	}
+	require.NoError(t, Restart())
 
-	err = Restart()
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = Shutdown()
-
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, Shutdown())
 }
 
 func TestConfigTypeMapper(t *testing.T) {
@@ -143,7 +111,7 @@ func TestRegexSetRegex(t *testing.T) {
 }
 
 func TestParticularStartAndStop(t *testing.T) {
-	Init("motion_test.conf", false, false)
+	require.NoError(t, Init("motion_test.conf", false, false))
 
 	require.NoError(t, Startup(false))
 
