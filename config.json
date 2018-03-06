@@ -21,8 +21,8 @@
 
     "notify" : {
         "method" : "telegram",
-        "token" : "273299502:AAE2WpPCGlVmRB9imD1fyZhEQkJ2medzYQs",
-        "to": ["227629410"],
+        "token" : "YOUR TELEGRAM API KEY",
+        "to": ["12345678"],
         "message": "Motion recognized",
         "photo": 2
     }
