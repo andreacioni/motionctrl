@@ -9,8 +9,8 @@ before_install:
   - sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
   - sudo apt-get install libwebp-dev
   - git clone https://github.com/Motion-Project/motion.git motion-release
-  - git checkout $(git ls-remote --tags https://github.com/Motion-Project/motion.git | awk '{print $2}' | grep -v '{}' | awk -F"/" '{print $3}' | tail -n 1)
   - cd motion-release
+  - git checkout $(git ls-remote --tags https://github.com/Motion-Project/motion.git | awk '{print $2}' | grep -v '{}' | awk -F"/" '{print $3}' | tail -n 1)
   - autoreconf -fiv
   - ./configure
   - make
