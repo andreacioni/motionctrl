@@ -16,7 +16,7 @@ import (
 
 type NotifyService interface {
 	Authenticate() error
-	Notify(string) error
+	Notify(string, string) error
 	Stop() error
 }
 
@@ -56,8 +56,12 @@ func Init(conf config.Notify) error {
 			if err = notifyService.Authenticate(); err != nil {
 				err = fmt.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 			} else {
-				photoLimitSemaphore = semaphore.New(notifyConfiguration.Photo)
-				photoLimitSemaphore.DrainPermits()
+				if conf.Photo > 0 {
+					photoLimitSemaphore = semaphore.New(notifyConfiguration.Photo)
+					photoLimitSemaphore.DrainPermits()
+				} else {
+					glg.Warn("No photo will be sent when motion is detected")
+				}
 			}
 		}
 	} else {
@@ -89,7 +93,10 @@ func MotionDetectedStart() {
 	defer mu.Unlock()
 
 	if notifyService != nil {
-		photoLimitSemaphore.ReleaseMany(notifyConfiguration.Photo)
+		if photoLimitSemaphore != nil {
+			photoLimitSemaphore.ReleaseMany(notifyConfiguration.Photo)
+		}
+		notifyService.Notify(notifyConfiguration.Message, "")
 	} else {
 		glg.Warn("No notify service is available")
 	}
@@ -112,7 +119,7 @@ func PhotoSaved(filepath string) {
 
 	if notifyService != nil {
 		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) {
-			if err := notifyService.Notify(filepath); err != nil {
+			if err := notifyService.Notify(notifyConfiguration.Message, filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
 			} else {
 				glg.Debugf("Sent notify (image; %s)", filepath)

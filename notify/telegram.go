@@ -29,14 +29,26 @@ func (n *TelegramNotifyService) Authenticate() error {
 	return nil
 }
 
-func (n *TelegramNotifyService) Notify(filename string) error {
+func (n *TelegramNotifyService) Notify(message, filename string) error {
 	var err error
 	for _, chatID := range n.chatIds {
-		photo := tgbotapi.NewPhotoUpload(chatID, filename)
 
-		if _, err = n.bot.Send(photo); err != nil {
-			err = glg.Errorf("Failed to send notify message to %d: %v", chatID, err)
+		if message != "" {
+			msg := tgbotapi.NewMessage(chatID, message)
+
+			if _, err = n.bot.Send(msg); err != nil {
+				err = glg.Errorf("Failed to send notify message to %d: %v", chatID, err)
+			}
 		}
+
+		if filename != "" {
+			photo := tgbotapi.NewPhotoUpload(chatID, filename)
+
+			if _, err = n.bot.Send(photo); err != nil {
+				err = glg.Errorf("Failed to send notify photo to %d: %v", chatID, err)
+			}
+		}
+
 	}
 
 	return err

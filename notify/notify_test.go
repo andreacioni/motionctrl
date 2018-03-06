@@ -10,7 +10,6 @@ import (
 
 func TestNotify(t *testing.T) {
 	require.NoError(t, Init(config.Notify{Method: "mock"}))
-
 	Shutdown()
 }
 

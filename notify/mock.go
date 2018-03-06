@@ -3,7 +3,7 @@ package notify
 type MockNotifyService struct {
 }
 
-func (b *MockNotifyService) Notify(file string) error {
+func (b *MockNotifyService) Notify(message, file string) error {
 	return nil
 }
 
