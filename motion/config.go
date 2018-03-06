@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	KeyValueRegex = "[a-zA-Z0-9_%\\/-]"
+	KeyValueRegex = "[a-zA-Z0-9_%\\/-()]"
 
 	configWriteRegex         = "Camera [0-9]+ write\nDone\n"
 	configDefaultParserRegex = "(?m)^([^;#]" + KeyValueRegex + "+) (" + KeyValueRegex + "+)$"
