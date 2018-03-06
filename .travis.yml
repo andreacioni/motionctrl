@@ -1,5 +1,8 @@
 language: go
 sudo: true
+
+dist: precise
+
 go:
   - 1.10.x
 
