@@ -6,7 +6,7 @@ go:
   - 1.10.x
 
 before_install:
-  - go get go get github.com/goreleaser/goreleaser
+  - go get github.com/goreleaser/goreleaser
   - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev
   - sudo apt-get install libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev
   - sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
