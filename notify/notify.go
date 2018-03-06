@@ -120,7 +120,7 @@ func PhotoSaved(filepath string) {
 
 	if notifyService != nil {
 		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) {
-			if err := notifyService.Notify(notifyConfiguration.Message, filepath); err != nil {
+			if err := notifyService.Notify("", filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
 			} else {
 				glg.Debugf("Sent notify (image; %s)", filepath)
