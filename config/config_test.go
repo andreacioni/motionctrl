@@ -8,6 +8,7 @@ import (
 
 func TestProvidedConfig(t *testing.T) {
 	Load("../config.json")
+	Unload()
 }
 
 func TestConfig1(t *testing.T) {
@@ -15,4 +16,14 @@ func TestConfig1(t *testing.T) {
 
 	require.Equal(t, Backup{}, GetBackupConfig())
 	require.Equal(t, Notify{}, GetNotifyConfig())
+
+	Unload()
+}
+
+func TestConfigNotUnloaded(t *testing.T) {
+	require.NoError(t, Load("test_config_1.json"))
+
+	require.Error(t, Load("test_config_1.json"))
+
+	Unload()
 }

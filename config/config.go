@@ -2,7 +2,10 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"reflect"
+	"sync"
 
 	"github.com/kpango/glg"
 )
@@ -37,35 +40,76 @@ type Notify struct {
 	Photo   int      `json:"photo"`
 }
 
-var conf Configuration
+var (
+	mu   sync.Mutex
+	conf Configuration
+)
 
 // Load function convert a loaded JSON config file to a config struct
 // return err if secret param is empty
 func Load(filename string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	glg.Infof("Loading configuration from %s ...", filename)
-	raw, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
 
-	err = json.Unmarshal(raw, &conf)
-	if err != nil {
-		return err
-	}
+	if conf.IsEmpty() {
+		raw, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return err
+		}
 
-	glg.Debugf("Current config: %+v", conf)
+		err = json.Unmarshal(raw, &conf)
+		if err != nil {
+			return err
+		}
+
+		glg.Debugf("Current config: %+v", conf)
+	} else {
+		return fmt.Errorf("Configuration already loaded")
+	}
 
 	return nil
 }
 
+func Unload() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	glg.Debug("Unloading configuration")
+
+	conf = Configuration{}
+}
+
 func GetConfig() Configuration {
+	mu.Lock()
+	defer mu.Unlock()
+
 	return conf
 }
 
 func GetBackupConfig() Backup {
+	mu.Lock()
+	defer mu.Unlock()
+
 	return conf.Backup
 }
 
 func GetNotifyConfig() Notify {
+	mu.Lock()
+	defer mu.Unlock()
+
 	return conf.Notify
+}
+
+func (c Configuration) IsEmpty() bool {
+	return reflect.DeepEqual(c, Configuration{})
+}
+
+func (c Notify) IsEmpty() bool {
+	return reflect.DeepEqual(c, Notify{})
+}
+
+func (c Backup) IsEmpty() bool {
+	return reflect.DeepEqual(c, Backup{})
 }
