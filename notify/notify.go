@@ -55,6 +55,7 @@ func Init(conf config.Notify) error {
 		} else {
 			if err = notifyService.Authenticate(); err != nil {
 				err = fmt.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
+				notifyService = nil
 			} else {
 				if conf.Photo > 0 {
 					photoLimitSemaphore = semaphore.New(notifyConfiguration.Photo)

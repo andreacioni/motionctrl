@@ -13,6 +13,16 @@ func TestNotify(t *testing.T) {
 	Shutdown()
 }
 
+func TestFailAutheticate(t *testing.T) {
+	require.Error(t, Init(config.Notify{Method: "telegram"}))
+
+	MotionDetectedStart()
+	MotionDetectedStop()
+	PhotoSaved("")
+
+	Shutdown()
+}
+
 func TestPhotoLimit(t *testing.T) {
 	n := 3
 	require.NoError(t, Init(config.Notify{Method: "mock", Photo: n}))
