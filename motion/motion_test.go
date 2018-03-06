@@ -78,7 +78,7 @@ func TestRegexConfigFileParser(t *testing.T) {
 
 	testMap := utils.RegexSubmatchTypedMap(configDefaultParserRegex, testString, ConfigTypeMapper)
 
-	require.Equal(t, 4, len(testMap))
+	require.Equal(t, 5, len(testMap))
 	require.Equal(t, 12, testMap["hello"])
 	require.Equal(t, 11, testMap["word"])
 	require.Empty(t, testMap["nullparam"])
@@ -91,7 +91,7 @@ func TestRegexConfigList(t *testing.T) {
 
 	testMap := utils.RegexSubmatchTypedMap(listConfigParserRegex, testString, ConfigTypeMapper)
 
-	require.Equal(t, 4, len(testMap))
+	require.Equal(t, 5, len(testMap))
 	require.Equal(t, 12, testMap["hello"])
 	require.Equal(t, 11, testMap["word"])
 	require.Empty(t, testMap["nullparam"])
