@@ -19,25 +19,23 @@ var (
 	motionConfigFile string
 )
 
-func Init(configFile string, autostart bool, detection bool) {
+func Init(configFile string, autostart bool, detection bool) error {
 
 	err := checkInstall()
 
 	if err != nil {
-		glg.Fatalf("Motion not found (%s)", err)
+		return fmt.Errorf("Motion not found (%s)", err)
 	}
 
 	if configFile != "" {
 		_, err = os.Stat(configFile)
 		if err != nil {
-			glg.Fatalf("Cannot open file %s", configFile)
-		} else {
-
-			glg.Infof("Motion config file specified: %s", configFile)
+			return fmt.Errorf("Cannot open file %s", configFile)
 		}
 
+		glg.Infof("Motion config file specified: %s", configFile)
 	} else {
-		glg.Fatalf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
+		return fmt.Errorf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
 	}
 
 	glg.Infof("Loading motion configuration from %s...", configFile)
@@ -45,12 +43,12 @@ func Init(configFile string, autostart bool, detection bool) {
 	err = loadConfig(configFile)
 
 	if err != nil {
-		glg.Fatalf("Failed to load motion configuration file (%s)", err)
+		return fmt.Errorf("Failed to load motion configuration file (%s)", err)
 	}
 
 	_, err = readPid()
 	if err == nil {
-		glg.Fatalf("Motion is started before %s. Kill motion and retry", version.Name)
+		return fmt.Errorf("Motion is started before %s. Kill motion and retry", version.Name)
 	}
 
 	motionConfigFile = configFile
@@ -60,9 +58,11 @@ func Init(configFile string, autostart bool, detection bool) {
 		err = Startup(detection)
 
 		if err != nil {
-			glg.Fatalf("Unable to startup motion (%s)", err)
+			return fmt.Errorf("Unable to startup motion (%s)", err)
 		}
 	}
+
+	return nil
 }
 
 func GetStreamBaseURL() string {

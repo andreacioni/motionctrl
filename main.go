@@ -31,19 +31,29 @@ func main() {
 	setupLogger()
 
 	//Load motionctrl configuration file
-	config.Load(configFile)
+	if err := config.Load(configFile); err != nil {
+		glg.Fatalf("Error loading configuration: %v", err)
+	}
 
 	//Initialize motion package
-	motion.Init(config.GetConfig().MotionConfigFile, autostart, detection)
+	if err := motion.Init(config.GetConfig().MotionConfigFile, autostart, detection); err != nil {
+		glg.Fatalf("Error initializing motion package: %v", err)
+	}
 
 	//Initialize backup  (if enabled)
-	backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir))
+	if err := backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir)); err != nil {
+		glg.Errorf("Error initializing backup package: %v", err)
+	}
 
 	//Initialize notify  (if enabled)
-	notify.Init(config.GetNotifyConfig())
+	if err := notify.Init(config.GetNotifyConfig()); err != nil {
+		glg.Errorf("Error initializing notify package: %v", err)
+	}
 
 	//Initialize REST api
-	api.Init()
+	if err := api.Init(); err != nil {
+		glg.Fatalf("Error initializing api package: %v", err)
+	}
 }
 
 func setupLogger() {

@@ -58,7 +58,7 @@ var (
 	backupStateMutex sync.Mutex
 )
 
-func Init(conf config.Backup, targetDir string) {
+func Init(conf config.Backup, targetDir string) error {
 	backupConfig = conf
 	targetDirectory = targetDir
 
@@ -71,19 +71,21 @@ func Init(conf config.Backup, targetDir string) {
 	} else {
 
 		if err = uploadService.Authenticate(); err != nil {
-			glg.Fatalf("Failed to authenticate on upload service: %s", err.Error())
+			return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
 		}
 
 		if err = setupCronSheduler(backupConfig); err != nil {
 
 			if err = setupDirectoryWatcher(backupConfig, targetDir); err != nil {
-				glg.Fatalf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+				return fmt.Errorf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
 			}
 		}
 
 		setStatus(StateActiveIdle)
 		runFlag.Set()
 	}
+
+	return nil
 }
 
 func GetStatus() State {
