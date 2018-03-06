@@ -1,0 +1,6 @@
+builds:
+  - binary: motionctrl
+    goos:
+      - linux
+    goarch:
+      - amd64

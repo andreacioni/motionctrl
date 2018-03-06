@@ -3,6 +3,15 @@ sudo: true
 go:
   - 1.10.x
 
+addons:
+  apt:
+    packages:
+    - rpm
+    - snapcraft
+
+env:
+- PATH=/snap/bin:$PATH
+
 before_install:
   - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev
   - sudo apt-get install libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev
@@ -19,3 +28,17 @@ before_install:
   - rm -rf motion-release
 
 go_import_path: github.com/andreacioni/motionctrl
+
+install:
+- sudo snap install snapcraft --classic
+
+services:
+- docker
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: curl -sL http://git.io/goreleaser | bash
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux
