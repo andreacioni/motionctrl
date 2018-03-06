@@ -234,7 +234,6 @@ func setConfigHandler(c *gin.Context) {
 		for k, v := range nameAndValue {
 			b := motion.ConfigCanSet(k)
 			if b {
-
 				if err := motion.ConfigSet(k, v.(string)); err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
 				} else {
@@ -246,18 +245,13 @@ func setConfigHandler(c *gin.Context) {
 							return
 						}
 					}
-
 					c.JSON(http.StatusOK, gin.H{k: motion.ConfigTypeMapper(v.(string))})
-
 				}
 			} else {
-				c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("'%s' cannot be updated with %s", k, version.Name)})
+				c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("'%s' parameter cannot be updated through %s", k, version.Name)})
 			}
-
 		}
-
 	}
-
 }
 
 func writeConfigHandler(c *gin.Context) {

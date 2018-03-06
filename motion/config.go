@@ -76,20 +76,13 @@ var ConfigTypeMapper = func(s string) interface{} {
 }
 
 var ReverseConfigTypeMapper = func(s string) interface{} {
-
-	integer, err := strconv.Atoi(s)
-
-	if err == nil {
-		return integer
-	}
-
 	switch s {
-	case "on":
-		return true
-	case "off":
-		return false
-	case "(null)":
-		return nil
+	case "true":
+		return "on"
+	case "false":
+		return "off"
+	case "null":
+		return ""
 	default:
 		return s
 	}
