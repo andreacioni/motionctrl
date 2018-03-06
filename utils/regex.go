@@ -6,7 +6,13 @@ import (
 
 func RegexFirstSubmatchString(regex string, str string) string {
 	re := regexp.MustCompile(regex)
-	return re.FindStringSubmatch(str)[1]
+	res := re.FindStringSubmatch(str)
+
+	if len(res) > 1 {
+		return res[1]
+	}
+
+	return ""
 }
 
 func RegexSubmatchTypedMap(regex string, str string, typeMapper func(string) interface{}) map[string]interface{} {
