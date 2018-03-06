@@ -1,17 +1,20 @@
 language: go
-sudo: true
 
-dist: precise
+sudo: true
+dist: trusty
 
 go:
   - 1.10.x
 
+# Required from Goreleaser
 addons:
   apt:
     packages:
+    - snapd
     - rpm
     - snapcraft
 
+# Required from Goreleaser
 env:
 - PATH=/snap/bin:$PATH
 
@@ -32,12 +35,15 @@ before_install:
 
 go_import_path: github.com/andreacioni/motionctrl
 
+# Required from Goreleaser
 install:
 - sudo snap install snapcraft --classic
 
+# Required from Goreleaser
 services:
 - docker
 
+# Required from Goreleaser
 deploy:
 - provider: script
   skip_cleanup: true
