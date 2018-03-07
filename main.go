@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"sync"
 
 	"github.com/kpango/glg"
 
@@ -19,9 +20,13 @@ var (
 	logLevel   string
 	autostart  bool
 	detection  bool
+
+	mu sync.Mutex
 )
 
 func main() {
+	mu.Lock()
+
 	fmt.Printf("%s is starting (version: %s)\n", version.Name, version.Number)
 
 	//Parse command line arguments
@@ -51,9 +56,13 @@ func main() {
 	}
 
 	//Initialize REST api
-	if err := api.Init(config.GetConfig()); err != nil {
+	if err := api.Init(config.GetConfig(), shutdownHook); err != nil {
 		glg.Errorf("Error initializing API package: %v", err)
 	}
+}
+
+func shutdownHook() {
+
 }
 
 func setupLogger() {
