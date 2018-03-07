@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/kpango/glg"
 
@@ -49,30 +50,47 @@ var handlersMap = map[string]MethodHandler{
 	"/backup/status":    MethodHandler{method: http.MethodGet, f: backupStatus},
 }
 
-func Init() {
+func Init(conf config.Configuration) error {
 	glg.Info("Initializing REST API ...")
-	var group *gin.RouterGroup
-	r := gin.Default()
 
-	internal := r.Group("/internal", isLocalhost)
+	if conf.Address == "" || conf.Port <= 0 {
+		return fmt.Errorf("Address and/or port not defined in configuration")
+	}
+
+	var group *gin.RouterGroup
+	router := gin.Default()
+
+	internal := router.Group("/internal", isLocalhost)
 
 	for path, handler := range internalHandlersMap {
 		internal.Handle(handler.method, path, handler.f)
 	}
 
-	if config.GetConfig().Username != "" && config.GetConfig().Password != "" {
+	if conf.Username != "" && conf.Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = r.Group("/", gin.BasicAuth(gin.Accounts{config.GetConfig().Username: config.GetConfig().Password}), needMotionUp)
+		group = router.Group("/", gin.BasicAuth(gin.Accounts{conf.Username: conf.Password}), needMotionUp)
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = r.Group("/", needMotionUp)
+		group = router.Group("/", needMotionUp)
 	}
 
 	for path, handler := range handlersMap {
 		group.Handle(handler.method, path, handler.f)
 	}
 
-	r.Run(fmt.Sprintf("%s:%d", config.GetConfig().Address, config.GetConfig().Port))
+	if conf.Ssl.CertFile != "" && conf.Ssl.KeyFile != "" {
+		glg.Infof("SSL/TLS enabled using certificate: %f, key: %f", conf.Ssl.CertFile, conf.Ssl.KeyFile)
+		if err := endless.ListenAndServeTLS(fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile, router); err != nil {
+			return fmt.Errorf("ListenAndServeTLS fail: %v", err)
+		}
+	} else {
+		glg.Warn("SSL/TLS NOT enabled")
+		if err := endless.ListenAndServe(fmt.Sprintf("%s:%d", conf.Address, conf.Port), router); err != nil {
+			return fmt.Errorf("ListenAndServe fail: %v", err)
+		}
+	}
+
+	return nil
 }
 
 // isLocalhost middlewares permit requests only from localhost
@@ -82,7 +100,7 @@ func isLocalhost(c *gin.Context) {
 	if err == nil {
 		ip := net.ParseIP(ipStr)
 
-		if ip == nil || !ip.IsLoopback() {
+		if ip == nil || !ip.IsLoopback() { //TODO check for other loca interfaces
 			glg.Warnf("Rejecting request to %s, IP: %s is not authorized", c.Request.URL.Path, c.Request.RemoteAddr)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "call to /internal/* api is allowed only from localhost"})
 		} else {
