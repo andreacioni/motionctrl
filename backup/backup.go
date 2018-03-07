@@ -130,19 +130,24 @@ func setupCronSheduler(conf config.Backup) error {
 }
 
 func setupDirectoryWatcher(conf config.Backup, outDirectory string) error {
+	var err error
 
-	maxFolderSize, err := utils.FromTextSize(conf.When)
+	maxFolderSize, err = utils.FromTextSize(conf.When)
 
 	if err == nil {
-		glg.Infof("Setup directory watcher on: %s, max size: %d bytes", outDirectory, maxFolderSize)
+		if maxFolderSize > 0 {
+			glg.Infof("Setup directory watcher on: %s, max size: %d bytes", outDirectory, maxFolderSize)
 
-		cronSheduler = cron.New()
+			cronSheduler = cron.New()
 
-		if err = cronSheduler.AddFunc("@every 1m", checkSize); err == nil {
-			glg.Info("Running directory size watcher every 1 minute")
-			cronSheduler.Start()
+			if err = cronSheduler.AddFunc("@every 1m", checkSize); err == nil {
+				glg.Info("Running directory size watcher every 1 minute")
+				cronSheduler.Start()
+			} else {
+				cronSheduler = nil
+			}
 		} else {
-			cronSheduler = nil
+			err = fmt.Errorf("Folder size is less than (or equal to) 0")
 		}
 	}
 
