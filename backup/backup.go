@@ -327,9 +327,7 @@ func backupWorker() {
 							return false
 						}
 
-						subFileList = append(subFileList, archive) //Remove archive file and photo
-
-						if err = removeFiles(subFileList); err != nil {
+						if err = removeFiles(append([]string{archive}, subFileList...)); err != nil {
 							return false
 						}
 
