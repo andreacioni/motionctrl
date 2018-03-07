@@ -93,8 +93,8 @@ func webControlGet(path string, callback func(string) (interface{}, error)) (int
 	resp, body, errs := gorequest.New().Get(GetBaseURL() + path).End()
 
 	if errs == nil {
+		glg.Debugf("Response body: %s", body)
 		if resp.StatusCode == http.StatusOK {
-			glg.Debugf("Response body: %s", body)
 			ret, err = callback(body)
 		} else {
 			ret, err = nil, fmt.Errorf("request failed with code: %d", resp.StatusCode)
