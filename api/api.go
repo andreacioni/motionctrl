@@ -79,16 +79,8 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 		group.Handle(handler.method, path, handler.f)
 	}
 
-	if conf.Ssl.CertFile != "" && conf.Ssl.KeyFile != "" {
-		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", conf.Ssl.CertFile, conf.Ssl.KeyFile)
-		if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
-			return fmt.Errorf("ListenAndServeTLS fail: %v", err)
-		}
-	} else {
-		glg.Warn("SSL/TLS NOT enabled")
-		if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), "", ""); err != nil {
-			return fmt.Errorf("ListenAndServe fail: %v", err)
-		}
+	if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
+		return fmt.Errorf("ListenAndServeTLS fail: %v", err)
 	}
 
 	return nil
