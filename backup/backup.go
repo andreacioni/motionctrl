@@ -58,12 +58,13 @@ var (
 )
 
 func Init(conf config.Backup, targetDir string) error {
+	var err error
 	backupConfig = conf
 	targetDirectory = targetDir
 
 	glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
 
-	uploadService, err := buildUploadService(backupConfig)
+	uploadService, err = buildUploadService(backupConfig)
 
 	if err != nil {
 		glg.Warn("Backup service won't be active")
