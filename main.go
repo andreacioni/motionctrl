@@ -22,7 +22,7 @@ var (
 )
 
 func main() {
-	fmt.Printf("%s is starting (version: %s build: %d)\n", version.Name, version.Number, version.Build)
+	fmt.Printf("%s is starting (version: %s)\n", version.Name, version.Number)
 
 	//Parse command line arguments
 	parseArgs()

@@ -4,3 +4,6 @@ builds:
       - linux
     goarch:
       - amd64
+
+release:
+  prerelease: true
