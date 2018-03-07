@@ -7,7 +7,7 @@ __Why motionctrl?__
 motionctlr allows you to:
 - start/stop motion through an easy REST api service
 - provide only one point to access both stream and webcontrol
-- improve motion security with HTTPS (**TODO**)
+- improve motion security with HTTPS
 - managing motion with JSON REST api that replace the old text webcontrol interface integrated in motion
 - backup old image/video in Google Drive* (archive & encryption support)
 - notify event through Telegram* to every device you want
@@ -75,7 +75,7 @@ When call fail (HTTP status code != 200), returned JSON object has only a **mess
 __FAQ__
 
  - How can I obtain valid cert/key to enable HTTPS support?
-   - BLA BLA BLA
+   - You can obtain them by issuing: ```openssl genrsa -out key.pem 1024 && openssl req -new -x509 -sha256 -key key.pem -out cert.pem -days 365```. This will give you a self signed certificate valid for 365 days.
    
  - How can I open encrypted beckup files?
    - BLA BLA BLA
