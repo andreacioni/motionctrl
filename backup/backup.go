@@ -18,7 +18,6 @@ import (
 
 	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"
-	"github.com/radovskyb/watcher"
 	"github.com/robfig/cron"
 	"github.com/tevino/abool"
 )
@@ -45,9 +44,9 @@ var (
 	backupConfig    config.Backup
 	targetDirectory string
 
-	dirWatcher *watcher.Watcher
-
 	cronSheduler *cron.Cron
+
+	maxFolderSize int64
 
 	workerMutex trylock.Mutex
 	runFlag     = abool.New()
@@ -100,11 +99,6 @@ func Shutdown() {
 
 	runFlag.UnSet()
 
-	if dirWatcher != nil {
-		dirWatcher.Close()
-		dirWatcher = nil
-	}
-
 	if cronSheduler != nil {
 		cronSheduler.Stop()
 		cronSheduler = nil
@@ -142,46 +136,14 @@ func setupDirectoryWatcher(conf config.Backup, outDirectory string) error {
 	if err == nil {
 		glg.Infof("Setup directory watcher on: %s, max size: %d bytes", outDirectory, maxFolderSize)
 
-		dirWatcher = watcher.New()
+		cronSheduler = cron.New()
 
-		dirWatcher.SetMaxEvents(1)
-
-		dirWatcher.FilterOps(watcher.Create)
-
-		if err := dirWatcher.Add(outDirectory); err != nil {
-			return err
+		if err = cronSheduler.AddFunc("@every 1m", checkSize); err == nil {
+			glg.Info("Running directory size watcher every 1 minute")
+			cronSheduler.Start()
+		} else {
+			cronSheduler = nil
 		}
-
-		go func() {
-			for {
-				select {
-				case <-dirWatcher.Event:
-					_, _, folderSize, err := listFile(outDirectory)
-					if err != nil {
-						glg.Errorf("Failed to evaluate folder size: %v", err)
-					}
-
-					glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
-					if folderSize > maxFolderSize {
-						go backupWorker()
-					}
-				case err := <-dirWatcher.Error:
-					glg.Error(err)
-				case <-dirWatcher.Closed:
-					glg.Debug("Directory watcher is closing")
-					return
-				}
-			}
-		}()
-
-		go func() {
-			//Running directory watcher every 1 minute
-			if err := dirWatcher.Start(time.Minute); err != nil {
-				glg.Error(err)
-			}
-		}()
-
-		dirWatcher.Wait()
 	}
 
 	return err
@@ -317,6 +279,18 @@ func removeFiles(filePath []string) error {
 	}
 
 	return nil
+}
+
+func checkSize() {
+	_, _, folderSize, err := listFile(targetDirectory)
+	if err != nil {
+		glg.Errorf("Failed to evaluate folder size: %v", err)
+	}
+
+	glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
+	if folderSize > maxFolderSize {
+		go backupWorker()
+	}
 }
 
 func backupWorker() {

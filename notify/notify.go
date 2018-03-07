@@ -73,6 +73,9 @@ func Init(conf config.Notify) error {
 }
 
 func Shutdown() {
+
+	glg.Info("Shuting down notify service")
+
 	mu.Lock()
 	defer mu.Unlock()
 
