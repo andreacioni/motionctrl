@@ -20,8 +20,14 @@ type Configuration struct {
 	MotionConfigFile string `json:"motionConfigFile"`
 	Username         string `json:"username"`
 	Password         string `json:"password"`
+	Ssl              SSL    `json:"ssl"`
 	Backup           Backup `json:"backup"`
 	Notify           Notify `json:"notify"`
+}
+
+type SSL struct {
+	CertFile string `json:"cert"`
+	KeyFile  string `json:"key"`
 }
 
 type Backup struct {
