@@ -25,7 +25,7 @@ func IsLocalIP(localIP net.IP) (bool, error) {
 				ip = v.IP
 			}
 
-			if ip.Equal(localIP) {
+			if ip != nil && ip.Equal(localIP) {
 				return true, nil
 			}
 		}
