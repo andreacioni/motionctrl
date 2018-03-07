@@ -81,12 +81,12 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 
 	if conf.Ssl.CertFile != "" && conf.Ssl.KeyFile != "" {
 		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", conf.Ssl.CertFile, conf.Ssl.KeyFile)
-		if err := listenAndServe(router, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
+		if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
 			return fmt.Errorf("ListenAndServeTLS fail: %v", err)
 		}
 	} else {
 		glg.Warn("SSL/TLS NOT enabled")
-		if err := listenAndServe(router, fmt.Sprintf("%s:%d", conf.Address, conf.Port), "", ""); err != nil {
+		if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), "", ""); err != nil {
 			return fmt.Errorf("ListenAndServe fail: %v", err)
 		}
 	}
@@ -111,6 +111,8 @@ func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort, certFi
 			return err
 		}
 	}
+
+	return nil
 }
 
 // isLocalhost middlewares permit requests only from localhost
