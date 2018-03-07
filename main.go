@@ -62,7 +62,13 @@ func main() {
 }
 
 func shutdownHook() {
+	notify.Shutdown()
 
+	backup.Shutdown()
+
+	motion.Shutdown()
+
+	config.Unload()
 }
 
 func setupLogger() {
