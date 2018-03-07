@@ -291,11 +291,11 @@ func checkSize() {
 	_, _, folderSize, err := listFile(targetDirectory)
 	if err != nil {
 		glg.Errorf("Failed to evaluate folder size: %v", err)
-	}
-
-	glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
-	if folderSize > maxFolderSize {
-		go backupWorker()
+	} else {
+		glg.Debugf("Output folder size: %d/%d", folderSize, maxFolderSize)
+		if folderSize > maxFolderSize {
+			go backupWorker()
+		}
 	}
 }
 
