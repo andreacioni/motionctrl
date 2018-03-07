@@ -79,7 +79,7 @@ func Init(conf config.Configuration) error {
 	}
 
 	if conf.Ssl.CertFile != "" && conf.Ssl.KeyFile != "" {
-		glg.Infof("SSL/TLS enabled using certificate: %f, key: %f", conf.Ssl.CertFile, conf.Ssl.KeyFile)
+		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", conf.Ssl.CertFile, conf.Ssl.KeyFile)
 		if err := endless.ListenAndServeTLS(fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile, router); err != nil {
 			return fmt.Errorf("ListenAndServeTLS fail: %v", err)
 		}

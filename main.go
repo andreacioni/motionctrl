@@ -51,7 +51,9 @@ func main() {
 	}
 
 	//Initialize REST api
-	api.Init()
+	if err := api.Init(config.GetConfig()); err != nil {
+		glg.Errorf("Error initializing API package: %v", err)
+	}
 }
 
 func setupLogger() {
