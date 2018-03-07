@@ -112,14 +112,15 @@ func isLocalhost(c *gin.Context) {
 	ipStr, _, err := net.SplitHostPort(c.Request.RemoteAddr)
 
 	if err == nil {
-		ip := net.ParseIP(ipStr)
+		fromIp := net.ParseIP(ipStr)
 
-		if ip == nil || !ip.IsLoopback() { //TODO check for other loca interfaces
+		if b, err := utils.IsLocalIP(fromIp); err != nil || !b {
 			glg.Warnf("Rejecting request to %s, IP: %s is not authorized", c.Request.URL.Path, c.Request.RemoteAddr)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "call to /internal/* api is allowed only from localhost"})
 		} else {
 			glg.Debugf("Accepting /internal api call from %s", c.Request.RemoteAddr)
 		}
+
 	} else {
 		glg.Errorf("Error in parsing request remote address: %s: %v", c.Request.RemoteAddr, err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("cannot parse remote address: %s: %v", c.Request.RemoteAddr, err)})

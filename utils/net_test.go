@@ -25,4 +25,10 @@ func TestIsLocalIPTrue(t *testing.T) {
 
 	require.NoError(t, err)
 	require.False(t, res)
+
+	//Nil
+	res, err = IsLocalIP(nil)
+
+	require.NoError(t, err)
+	require.False(t, res)
 }
