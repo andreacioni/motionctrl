@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
@@ -50,7 +51,7 @@ var handlersMap = map[string]MethodHandler{
 	"/backup/status":    MethodHandler{method: http.MethodGet, f: backupStatus},
 }
 
-func Init(conf config.Configuration) error {
+func Init(conf config.Configuration, shutdownHook func()) error {
 	glg.Info("Initializing REST API ...")
 
 	if conf.Address == "" || conf.Port <= 0 {
@@ -80,17 +81,36 @@ func Init(conf config.Configuration) error {
 
 	if conf.Ssl.CertFile != "" && conf.Ssl.KeyFile != "" {
 		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", conf.Ssl.CertFile, conf.Ssl.KeyFile)
-		if err := endless.ListenAndServeTLS(fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile, router); err != nil {
+		if err := listenAndServe(router, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
 			return fmt.Errorf("ListenAndServeTLS fail: %v", err)
 		}
 	} else {
 		glg.Warn("SSL/TLS NOT enabled")
-		if err := endless.ListenAndServe(fmt.Sprintf("%s:%d", conf.Address, conf.Port), router); err != nil {
+		if err := listenAndServe(router, fmt.Sprintf("%s:%d", conf.Address, conf.Port), "", ""); err != nil {
 			return fmt.Errorf("ListenAndServe fail: %v", err)
 		}
 	}
 
 	return nil
+}
+
+func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort, certFile, keyFile string) error {
+	server := endless.NewServer(addressPort, router)
+
+	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGINT, shutdownHook)
+	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGTERM, shutdownHook)
+
+	if certFile != "" && keyFile != "" {
+		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", certFile, keyFile)
+		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+			return err
+		}
+	} else {
+		glg.Warn("SSL/TLS NOT enabled")
+		if err := server.ListenAndServe(); err != nil {
+			return err
+		}
+	}
 }
 
 // isLocalhost middlewares permit requests only from localhost
