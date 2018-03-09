@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"mime"
 	"net/http"
-	"net/url"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"github.com/kpango/glg"
@@ -117,10 +115,8 @@ func (b *GoogleDriveBackupService) getConfig() *oauth2.Config {
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
 func (b *GoogleDriveBackupService) getClient(ctx context.Context, config *oauth2.Config) (*http.Client, error) {
-	cacheFile, err := b.tokenCacheFile()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get path to cached credential file. %v", err)
-	}
+	cacheFile := fmt.Sprintf(".google_drive_%s.json", version.Name)
+
 	tok, err := b.tokenFromFile(cacheFile)
 	if err != nil {
 		tok, err = b.getTokenFromWeb(config)
@@ -155,18 +151,6 @@ func (b *GoogleDriveBackupService) getTokenFromWeb(config *oauth2.Config) (*oaut
 		return nil, fmt.Errorf("Unable to read authorization code %v", err)
 	}
 	return tok, err
-}
-
-// tokenCacheFile generates credential file path/filename.
-// It returns the generated credential path/filename.
-func (b *GoogleDriveBackupService) tokenCacheFile() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	tokenCacheDir := usr.HomeDir
-	return filepath.Join(tokenCacheDir,
-		url.QueryEscape(fmt.Sprintf(".google_drive_%s.json", version.Name))), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
