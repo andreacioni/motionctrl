@@ -76,11 +76,13 @@ func Init(conf config.Backup, targetDir string) error {
 
 			if uploadService, err = buildUploadService(conf); err != nil {
 				uploadService = nil
+				stopScheduler()
 				return fmt.Errorf("Unable to istantiate backup service: %v", err)
 			}
 
 			if err = uploadService.Authenticate(); err != nil {
 				uploadService = nil
+				stopScheduler()
 				return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
 			}
 
@@ -105,13 +107,10 @@ func Shutdown() {
 
 	glg.Info("Shuting down backup service")
 
+	stopScheduler()
+
 	backupConfig = config.Backup{}
 	targetDirectory = ""
-
-	if cronSheduler != nil {
-		cronSheduler.Stop()
-		cronSheduler = nil
-	}
 
 	uploadService = nil
 
@@ -141,6 +140,13 @@ func setStatus(s State) {
 	defer sMutex.Unlock()
 	glg.Debugf("Setting backup state from: %s to: %s", backupStatus, s)
 	backupStatus = s
+}
+
+func stopScheduler() {
+	if cronSheduler != nil {
+		cronSheduler.Stop()
+		cronSheduler = nil
+	}
 }
 
 func setupCronSheduler(conf config.Backup) error {
