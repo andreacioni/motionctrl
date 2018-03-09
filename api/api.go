@@ -49,6 +49,7 @@ var handlersMap = map[string]MethodHandler{
 	"/config/get":       MethodHandler{method: http.MethodGet, f: getConfigHandler},
 	"/config/write":     MethodHandler{method: http.MethodGet, f: writeConfigHandler},
 	"/backup/status":    MethodHandler{method: http.MethodGet, f: backupStatus},
+	"/backup/launch":    MethodHandler{method: http.MethodGet, f: backupLaunch},
 }
 
 func Init(conf config.Configuration, shutdownHook func()) error {
@@ -299,4 +300,12 @@ func writeConfigHandler(c *gin.Context) {
 
 func backupStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": backup.GetStatus()})
+}
+
+func backupLaunch(c *gin.Context) {
+	if err := backup.RunNow(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "backup service is running now"})
+	}
 }

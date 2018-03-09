@@ -52,7 +52,8 @@ var (
 	uMutex        sync.Mutex
 	uploadService UploadService
 
-	backupStatus State
+	sMutex       sync.Mutex
+	backupStatus = StateDeactivated
 )
 
 func Init(conf config.Backup, targetDir string) error {
@@ -63,14 +64,13 @@ func Init(conf config.Backup, targetDir string) error {
 
 	if uploadService != nil {
 		if !conf.IsEmpty() {
-			backupConfig = conf
-			targetDirectory = targetDir
-
 			glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
 
 			if err = setupCronSheduler(backupConfig); err != nil {
-				if err := setupDirectoryWatcher(backupConfig, targetDir); err != nil {
-					return fmt.Errorf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+				if err = setupDirectoryWatcher(backupConfig, targetDir); err != nil {
+					if backupConfig.When != "manual" {
+						return fmt.Errorf("Not a valid for 'backup.when'=%s", backupConfig.When)
+					}
 				}
 			}
 
@@ -83,6 +83,11 @@ func Init(conf config.Backup, targetDir string) error {
 				uploadService = nil
 				return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
 			}
+
+			backupConfig = conf
+			targetDirectory = targetDir
+
+			setStatus(StateActiveIdle)
 		} else {
 			glg.Warn("No backup config found")
 		}
@@ -100,6 +105,9 @@ func Shutdown() {
 
 	glg.Info("Shuting down backup service")
 
+	backupConfig = config.Backup{}
+	targetDirectory = ""
+
 	if cronSheduler != nil {
 		cronSheduler.Stop()
 		cronSheduler = nil
@@ -109,7 +117,7 @@ func Shutdown() {
 
 }
 
-func LaunchNow() error {
+func RunNow() error {
 	uMutex.Lock()
 	defer uMutex.Unlock()
 
@@ -120,6 +128,19 @@ func LaunchNow() error {
 	}
 
 	return nil
+}
+
+func GetStatus() State {
+	sMutex.Lock()
+	defer sMutex.Unlock()
+	return backupStatus
+}
+
+func setStatus(s State) {
+	sMutex.Lock()
+	defer sMutex.Unlock()
+	glg.Debugf("Setting backup state from: %s to: %s", backupStatus, s)
+	backupStatus = s
 }
 
 func setupCronSheduler(conf config.Backup) error {
@@ -309,7 +330,11 @@ func checkSize() {
 func backupWorker() {
 	if workerMutex.TryLock() {
 		defer workerMutex.Unlock()
+		defer setStatus(StateActiveIdle)
+
 		glg.Debug("Backup service worker is running now")
+
+		setStatus(StateActiveRunning)
 
 		_, fileList, _, err := listFile(targetDirectory)
 
