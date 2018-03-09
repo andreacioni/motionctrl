@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/andreacioni/motionctrl/utils"
@@ -25,64 +26,118 @@ func Startup(motionDetectionStartup bool) error {
 
 	glg.Debugf("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
-	if !started {
-		if err := startMotion(motionDetectionStartup); err != nil {
-			return err
+	var err error
+	var started bool
+
+	if started, err = checkStarted(); err == nil {
+		if !started {
+			if err = startMotion(motionDetectionStartup); err != nil {
+				return err
+			}
+		} else {
+			glg.Warn("motion is already started")
 		}
-		started = true
 	} else {
-		glg.Warn("motion is already started")
+		err = fmt.Errorf("unable to check if motion is started: %v", err)
 	}
 
-	return nil
+	return err
 }
 
 func Shutdown() error {
-	var err error
 	sMutex.Lock()
 	defer sMutex.Unlock()
 
+	var err error
+	var started bool
+
 	glg.Debug("Stopping motion")
 
-	if started {
-		err = stopMotion()
+	if started, err = checkStarted(); err == nil {
+		if started {
+			err = stopMotion()
+		} else {
+			glg.Warn("motion is already stopped")
+		}
 	} else {
-		glg.Warn("motion is already stopped")
+		err = fmt.Errorf("unable to check if motion is started: %v", err)
 	}
-
-	started = false
 
 	return err
 }
 
 func Restart() error { //TODO started consistency isn't guaranteed
-	var err error
-	var detection bool
 	sMutex.Lock()
 	defer sMutex.Unlock()
 
+	var err error
+	var detection, started bool
+
 	glg.Debug("Restarting motion")
 
-	if started {
-		detection, err = IsMotionDetectionEnabled()
-		if err == nil {
-			err = stopMotion()
+	if started, err = checkStarted(); err == nil {
+		if started {
+			detection, err = IsMotionDetectionEnabled()
 			if err == nil {
-				err = startMotion(detection)
+				err = stopMotion()
+				if err == nil {
+					err = startMotion(detection)
+				}
 			}
-		}
 
+		} else {
+			err = fmt.Errorf("motion is not running")
+		}
 	} else {
-		err = fmt.Errorf("motion is not running")
+		err = fmt.Errorf("unable to check if motion is started: %v", err)
 	}
 
 	return err
 }
 
-func IsStarted() bool {
+func IsStarted() (bool, error) {
 	sMutex.Lock()
 	defer sMutex.Unlock()
-	return started
+	return checkStarted()
+}
+
+func checkStarted() (bool, error) {
+	pid, err := readPid()
+
+	if err != nil {
+		return false, nil
+	}
+
+	if check := isRunningPID(pid); !check {
+		/*
+			Motion pid file isn't valid, probably it belongs to a Motion instance that
+			wasn't terminate correctly. Removing old file.
+		*/
+
+		glg.Warn("Removing old PID file")
+
+		if err := os.Remove(readOnlyConfig[ConfigProcessIdFile]); err != nil {
+			return false, fmt.Errorf("Failed to remove invalid PID file: %v", err)
+		}
+
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func isRunningPID(pid int) bool {
+	/*
+		from docs: On Unix systems, FindProcess always succeeds and returns
+		a Process for the given pid, regardless of whether the process exists.
+	*/
+	proc, _ := os.FindProcess(pid)
+
+	if err := proc.Signal(syscall.Signal(0)); err != nil {
+		return false //err == syscall.EPERM
+	}
+
+	return true
 }
 
 func readPid() (int, error) {

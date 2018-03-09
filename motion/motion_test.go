@@ -2,6 +2,7 @@ package motion
 
 import (
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/andreacioni/motionctrl/utils"
@@ -41,7 +42,28 @@ func TestStartStop(t *testing.T) {
 
 	require.NoError(t, Startup(false))
 
-	require.True(t, IsStarted())
+	started, err := IsStarted()
+
+	require.NoError(t, err)
+	require.True(t, started)
+
+	require.NoError(t, Shutdown())
+}
+
+func TestIsRunning(t *testing.T) {
+
+	err := ioutil.WriteFile("/tmp/motion.pid", []byte("1234567"), 0666)
+
+	require.NoError(t, err)
+
+	require.NoError(t, Init("motion_test.conf", false, false))
+
+	require.NoError(t, Startup(false))
+
+	started, err := IsStarted()
+
+	require.NoError(t, err)
+	require.True(t, started)
 
 	require.NoError(t, Shutdown())
 }
@@ -49,7 +71,10 @@ func TestStartStop(t *testing.T) {
 func TestStartStopAutostart(t *testing.T) {
 	require.NoError(t, Init("motion_test.conf", true, false))
 
-	require.True(t, IsStarted())
+	started, err := IsStarted()
+
+	require.NoError(t, err)
+	require.True(t, started)
 
 	require.NoError(t, Shutdown())
 }
@@ -60,7 +85,10 @@ func TestRestart(t *testing.T) {
 
 	require.NoError(t, Startup(false))
 
-	require.True(t, IsStarted())
+	started, err := IsStarted()
+
+	require.NoError(t, err)
+	require.True(t, started)
 
 	require.NoError(t, Restart())
 
@@ -123,7 +151,10 @@ func TestParticularStartAndStop(t *testing.T) {
 
 	require.NoError(t, Startup(false))
 
-	require.True(t, IsStarted())
+	started, err := IsStarted()
+
+	require.NoError(t, err)
+	require.True(t, started)
 
 	ret, err := ConfigGet("log_level") //Changing daemon instead of 'log_level' cause Shutdown to fail
 

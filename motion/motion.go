@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	sMutex  sync.Mutex
-	started bool
+	sMutex sync.Mutex
 
 	motionConfigFile string
 )
@@ -27,8 +26,12 @@ func Init(configFile string, autostart bool, detection bool) error {
 		return fmt.Errorf("Motion not found: %v", err)
 	}
 
-	if pid, err := readPid(); err == nil {
-		return fmt.Errorf("Motion (PID: %d) is started before %s. Kill motion and retry", pid, version.Name)
+	if started, err := checkStarted(); err == nil {
+		if started {
+			glg.Warn("Motion started before %s", version.Name)
+		}
+	} else {
+		return fmt.Errorf("Unable to check is motion is running: %v", err)
 	}
 
 	if err := loadConfig(configFile); err != nil {
@@ -43,8 +46,6 @@ func Init(configFile string, autostart bool, detection bool) error {
 		if err := startMotion(detection); err != nil {
 			return fmt.Errorf("Unable to start motion: %v", err)
 		}
-
-		started = true
 	}
 
 	return nil

@@ -132,12 +132,17 @@ func isLocalhost(c *gin.Context) {
 // needMotionUp Every request, except for /control* requests, need motion up and running
 func needMotionUp(c *gin.Context) {
 	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/control") {
-		motionStarted := motion.IsStarted()
 
-		if !motionStarted {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "motion was not started yet"})
+		if motionStarted, err := motion.IsStarted(); err == nil {
+			if !motionStarted {
+				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "motion was not started yet"})
+				return
+			}
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": fmt.Errorf("Unable to check if motion is up: %v", err)})
 			return
 		}
+
 	}
 }
 
@@ -179,9 +184,11 @@ func stopHandler(c *gin.Context) {
 }
 
 func statusHandler(c *gin.Context) {
-	started := motion.IsStarted()
-
-	c.JSON(http.StatusOK, gin.H{"motionStarted": started})
+	if started, err := motion.IsStarted(); err == nil {
+		c.JSON(http.StatusOK, gin.H{"motionStarted": started})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to check if motion is up: %v", err)})
+	}
 }
 
 func isMotionDetectionEnabled(c *gin.Context) {
