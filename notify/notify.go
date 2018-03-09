@@ -30,16 +30,15 @@ const (
 var (
 	notifyConfiguration config.Notify
 
+	nMutex        sync.Mutex
 	notifyService NotifyService
 
 	photoLimitSemaphore *semaphore.Semaphore
-
-	mu sync.Mutex
 )
 
 func Init(conf config.Notify) error {
-	mu.Lock()
-	defer mu.Unlock()
+	nMutex.Lock()
+	defer nMutex.Unlock()
 
 	var err error
 
@@ -73,11 +72,10 @@ func Init(conf config.Notify) error {
 }
 
 func Shutdown() {
+	nMutex.Lock()
+	defer nMutex.Unlock()
 
 	glg.Info("Shuting down notify service")
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	if notifyService != nil {
 		notifyService.Stop()
@@ -93,8 +91,8 @@ func Shutdown() {
 }
 
 func MotionDetectedStart() {
-	mu.Lock()
-	defer mu.Unlock()
+	nMutex.Lock()
+	defer nMutex.Unlock()
 
 	if notifyService != nil {
 		if photoLimitSemaphore != nil {
@@ -107,8 +105,8 @@ func MotionDetectedStart() {
 }
 
 func MotionDetectedStop() {
-	mu.Lock()
-	defer mu.Unlock()
+	nMutex.Lock()
+	defer nMutex.Unlock()
 
 	if notifyService != nil {
 		photoLimitSemaphore.DrainPermits()
@@ -118,8 +116,8 @@ func MotionDetectedStop() {
 }
 
 func PhotoSaved(filepath string) {
-	mu.Lock()
-	defer mu.Unlock()
+	nMutex.Lock()
+	defer nMutex.Unlock()
 
 	if notifyService != nil {
 		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) {
