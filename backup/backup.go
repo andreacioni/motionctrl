@@ -19,7 +19,6 @@ import (
 	"github.com/LK4D4/trylock"
 	"github.com/kpango/glg"
 	"github.com/robfig/cron"
-	"github.com/tevino/abool"
 )
 
 type UploadService interface {
@@ -49,70 +48,78 @@ var (
 	maxFolderSize int64
 
 	workerMutex trylock.Mutex
-	runFlag     = abool.New()
 
+	uMutex        sync.Mutex
 	uploadService UploadService
 
-	backupStatus     State
-	backupStateMutex sync.Mutex
+	backupStatus State
 )
 
 func Init(conf config.Backup, targetDir string) error {
+	uMutex.Lock()
+	defer uMutex.Unlock()
+
 	var err error
-	backupConfig = conf
-	targetDirectory = targetDir
 
-	glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
+	if uploadService != nil {
+		if !conf.IsEmpty() {
+			backupConfig = conf
+			targetDirectory = targetDir
 
-	uploadService, err = buildUploadService(backupConfig)
+			glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
 
-	if err != nil {
-		glg.Warn("Backup service won't be active")
-	} else {
-
-		if err = uploadService.Authenticate(); err != nil {
-			return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
-		}
-
-		if err = setupCronSheduler(backupConfig); err != nil {
-
-			if err = setupDirectoryWatcher(backupConfig, targetDir); err != nil {
-				return fmt.Errorf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+			if err = setupCronSheduler(backupConfig); err != nil {
+				if err := setupDirectoryWatcher(backupConfig, targetDir); err != nil {
+					return fmt.Errorf("Not a valid size/cron expression in' backup.when'=%s", backupConfig.When)
+				}
 			}
+
+			if uploadService, err = buildUploadService(backupConfig); err != nil {
+				uploadService = nil
+				return fmt.Errorf("Unable to istantiate backup service: %v", err)
+			}
+
+			if err = uploadService.Authenticate(); err != nil {
+				uploadService = nil
+				return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
+			}
+		} else {
+			glg.Warn("No backup config found")
 		}
 
-		setStatus(StateActiveIdle)
-		runFlag.Set()
+	} else {
+		return fmt.Errorf("Backup service already initialized")
 	}
 
-	return nil
-}
-
-func GetStatus() State {
-	backupStateMutex.Lock()
-	defer backupStateMutex.Unlock()
-	return backupStatus
+	return err
 }
 
 func Shutdown() {
+	uMutex.Lock()
+	defer uMutex.Unlock()
 
 	glg.Info("Shuting down backup service")
-
-	runFlag.UnSet()
 
 	if cronSheduler != nil {
 		cronSheduler.Stop()
 		cronSheduler = nil
 	}
 
-	setStatus(StateDeactivated)
+	uploadService = nil
 
 }
 
-func setStatus(status State) {
-	backupStateMutex.Lock()
-	defer backupStateMutex.Unlock()
-	backupStatus = status
+func LaunchNow() error {
+	uMutex.Lock()
+	defer uMutex.Unlock()
+
+	if uploadService != nil {
+		go backupWorker()
+	} else {
+		return fmt.Errorf("Upload service is not ready")
+	}
+
+	return nil
 }
 
 func setupCronSheduler(conf config.Backup) error {
@@ -300,81 +307,60 @@ func checkSize() {
 }
 
 func backupWorker() {
-	if runFlag.IsSet() {
-		if workerMutex.TryLock() {
-			defer workerMutex.Unlock()
-			glg.Debug("Backup service worker is running now")
-			setStatus(StateActiveRunning)
+	if workerMutex.TryLock() {
+		defer workerMutex.Unlock()
+		glg.Debug("Backup service worker is running now")
 
-			_, fileList, _, err := listFile(targetDirectory)
+		_, fileList, _, err := listFile(targetDirectory)
 
-			glg.Debugf("Backup file list: %+v", fileList)
+		glg.Debugf("Backup file list: %+v", fileList)
 
-			if err != nil {
-				glg.Error(err)
-			} else {
-				if backupConfig.Archive { //Group file into archive, encrypt (if needed) and upload
-					utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
-						subFileList := subList.([]string)
+		if err != nil {
+			glg.Error(err)
+		} else {
+			if backupConfig.Archive { //Group file into archive, encrypt (if needed) and upload
+				utils.BlockSlideSlice(fileList, backupConfig.FilePerArchive, func(subList interface{}) bool {
+					subFileList := subList.([]string)
+					var archive string
 
-						archive, err := archiveFiles(subFileList)
-
-						if err != nil {
-							return false
-						}
-
-						if archive, err = encryptAndUpload(archive, backupConfig.EncryptionKey); err != nil {
-							return false
-						}
-
-						if err = removeFiles(append([]string{archive}, subFileList...)); err != nil {
-							return false
-						}
-
-						if !runFlag.IsSet() {
-							glg.Warn("Run flag disabled")
-							return false
-						}
-
-						return true
-					})
+					archive, err = archiveFiles(subFileList)
 
 					if err != nil {
+						return false
+					}
+
+					if archive, err = encryptAndUpload(archive, backupConfig.EncryptionKey); err != nil {
+						return false
+					}
+
+					if err = removeFiles(append([]string{archive}, subFileList...)); err != nil {
+						return false
+					}
+
+					return true
+				})
+
+				if err != nil {
+					glg.Error(err)
+					return
+				}
+			} else { //Encrypt file (if needed) and upload. No archive
+				for _, f := range fileList {
+
+					if f, err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
 						glg.Error(err)
 						return
 					}
 
-					if !runFlag.IsSet() {
-						glg.Warn("Run flag disabled")
+					if err = os.Remove(f); err != nil {
+						glg.Error(err)
 						return
 					}
-				} else { //Encrypt file (if needed) and upload. No archive
-					for _, f := range fileList {
-
-						if f, err = encryptAndUpload(f, backupConfig.EncryptionKey); err != nil {
-							glg.Error(err)
-							return
-						}
-
-						if err = os.Remove(f); err != nil {
-							glg.Error(err)
-							return
-						}
-
-						if !runFlag.IsSet() {
-							glg.Warn("Run flag disabled")
-							return
-						}
-					}
 				}
-
 			}
-
-		} else {
-			glg.Debug("Backup worker is already running")
 		}
 	} else {
-		glg.Warn("Worker disabled")
+		glg.Debug("Backup worker is already running")
 	}
 
 }
