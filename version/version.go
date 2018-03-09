@@ -2,5 +2,5 @@ package version
 
 var (
 	Name   = "motionctrl"
-	Number = "0.0.6"
+	Number = "0.0.7"
 )
