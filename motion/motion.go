@@ -43,6 +43,8 @@ func Init(configFile string, autostart bool, detection bool) error {
 		if err := startMotion(detection); err != nil {
 			return fmt.Errorf("Unable to start motion: %v", err)
 		}
+
+		started = true
 	}
 
 	return nil

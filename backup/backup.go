@@ -62,7 +62,7 @@ func Init(conf config.Backup, targetDir string) error {
 
 	var err error
 
-	if uploadService != nil {
+	if uploadService == nil {
 		if !conf.IsEmpty() {
 			glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
 

@@ -150,8 +150,6 @@ func waitLive() error {
 	req := gorequest.New()
 	i, secs := 0, 15
 	for resp, body, errs := req.Get(GetBaseURL()).End(); i < secs; resp, body, errs = req.Get(GetBaseURL()).End() {
-		glg.Debug("Response body: %s", body)
-
 		if errs == nil && resp.StatusCode == http.StatusOK && utils.RegexMustMatch(waitLiveRegex, body) {
 			break
 		}
