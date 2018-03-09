@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Utility script used to create new versions
+
 echo "Creating new version"
 
 FILE=version/version.go

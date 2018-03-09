@@ -26,7 +26,7 @@ func Startup(motionDetectionStartup bool) error {
 	glg.Debugf("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
 	if !started {
-		if err := startMotion(motionDetectionStartup); err == nil {
+		if err := startMotion(motionDetectionStartup); err != nil {
 			return err
 		}
 		started = true
@@ -55,7 +55,7 @@ func Shutdown() error {
 	return err
 }
 
-func Restart() error {
+func Restart() error { //TODO started consistency isn't guaranteed
 	var err error
 	var detection bool
 	sMutex.Lock()
@@ -150,8 +150,9 @@ func waitLive() error {
 	req := gorequest.New()
 	i, secs := 0, 15
 	for resp, body, errs := req.Get(GetBaseURL()).End(); i < secs; resp, body, errs = req.Get(GetBaseURL()).End() {
+		glg.Debug("Response body: %s", body)
 
-		if errs != nil && resp.StatusCode == http.StatusOK && utils.RegexMustMatch(waitLiveRegex, body) {
+		if errs == nil && resp.StatusCode == http.StatusOK && utils.RegexMustMatch(waitLiveRegex, body) {
 			break
 		}
 

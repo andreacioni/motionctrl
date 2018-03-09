@@ -53,7 +53,7 @@ func GetStreamBaseURL() string {
 }
 
 func GetBaseURL() string {
-	return fmt.Sprintf("http://%s:%s/0", config.BaseAddress, readOnlyConfig[ConfigWebControlPort])
+	return fmt.Sprintf("http://%s:%s", config.BaseAddress, readOnlyConfig[ConfigWebControlPort])
 }
 
 //CheckInstall will check if motion is available and ready to be controlled. If motion isn't available the program will exit showing an error
@@ -73,7 +73,7 @@ func webControlGet(path string, callback func(string) (interface{}, error)) (int
 	var err error
 	var ret interface{}
 
-	resp, body, errs := gorequest.New().Get(GetBaseURL() + path).End()
+	resp, body, errs := gorequest.New().Get(GetBaseURL() + "/0" + path).End()
 
 	if errs == nil {
 		glg.Debugf("Response body: %s", body)
