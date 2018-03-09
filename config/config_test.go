@@ -27,3 +27,13 @@ func TestConfigNotUnloaded(t *testing.T) {
 
 	Unload()
 }
+
+func TestConfigEmpty(t *testing.T) {
+	require.True(t, Configuration{}.IsEmpty())
+	require.True(t, Backup{}.IsEmpty())
+	require.True(t, Notify{}.IsEmpty())
+
+	require.False(t, Configuration{Address: "101.1.1.1"}.IsEmpty())
+	require.False(t, Backup{Method: "test"}.IsEmpty())
+	require.False(t, Notify{Method: "test"}.IsEmpty())
+}

@@ -64,17 +64,17 @@ func Init(conf config.Backup, targetDir string) error {
 
 	if uploadService == nil {
 		if !conf.IsEmpty() {
-			glg.Debugf("Initializing backup service: %+v, target directory: %s", backupConfig, targetDir)
+			glg.Debugf("Initializing backup service: %+v, target directory: %s", conf, targetDir)
 
-			if err = setupCronSheduler(backupConfig); err != nil {
-				if err = setupDirectoryWatcher(backupConfig, targetDir); err != nil {
-					if backupConfig.When != "manual" {
-						return fmt.Errorf("Not a valid for 'backup.when'=%s", backupConfig.When)
+			if err = setupCronSheduler(conf); err != nil {
+				if err = setupDirectoryWatcher(conf, targetDir); err != nil {
+					if conf.When != "manual" {
+						return fmt.Errorf("Not a valid for 'backup.when'=%s: %v", conf.When, err)
 					}
 				}
 			}
 
-			if uploadService, err = buildUploadService(backupConfig); err != nil {
+			if uploadService, err = buildUploadService(conf); err != nil {
 				uploadService = nil
 				return fmt.Errorf("Unable to istantiate backup service: %v", err)
 			}
