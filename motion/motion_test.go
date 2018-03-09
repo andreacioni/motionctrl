@@ -46,6 +46,14 @@ func TestStartStop(t *testing.T) {
 	require.NoError(t, Shutdown())
 }
 
+func TestStartStopAutostart(t *testing.T) {
+	require.NoError(t, Init("motion_test.conf", true, false))
+
+	require.True(t, IsStarted())
+
+	require.NoError(t, Shutdown())
+}
+
 func TestRestart(t *testing.T) {
 
 	require.NoError(t, Init("motion_test.conf", false, false))
