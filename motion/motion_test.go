@@ -138,3 +138,9 @@ func TestSomeConfigs(t *testing.T) {
 	conf, _ := parseConfig("motion_test.conf")
 	require.Equal(t, "/tmp", conf[ConfigTargetDir])
 }
+
+func TestWaitLiveRegex(t *testing.T) {
+	text := "Motion 4.1.1+gitfcc66b8 Running [1] Camera\n0\n"
+
+	require.True(t, utils.RegexMustMatch(waitLiveRegex, text))
+}

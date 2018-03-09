@@ -43,6 +43,14 @@ In order to execute motionctrl you need a valid JSON configuration file, an exam
         "archive":true,
         "filePerArchive" : 10
     },
+
+    "notify" : {
+        "method" : "telegram",
+        "token" : "YOUR TELEGRAM API KEY",
+        "to": ["12345678"],
+        "message": "Motion recognized",
+        "photo": 2
+    }
 }
 ```
 

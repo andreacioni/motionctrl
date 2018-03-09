@@ -3,43 +3,49 @@ package motion
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 	"time"
 
+	"github.com/andreacioni/motionctrl/utils"
+
 	"github.com/kpango/glg"
 	"github.com/parnurzeal/gorequest"
 )
 
+const (
+	waitLiveRegex = "Motion"
+)
+
 func Startup(motionDetectionStartup bool) error {
-	var err error
-	mu.Lock()
-	defer mu.Unlock()
+	sMutex.Lock()
+	defer sMutex.Unlock()
 
 	glg.Debugf("Starting motion (detection enabled: %t)", motionDetectionStartup)
 
 	if !started {
-		err = startMotion(motionDetectionStartup)
-		if err == nil {
-			started = true
+		if err := startMotion(motionDetectionStartup); err == nil {
+			return err
 		}
+		started = true
 	} else {
 		glg.Warn("motion is already started")
 	}
 
-	return err
+	return nil
 }
 
 func Shutdown() error {
 	var err error
-	mu.Lock()
-	defer mu.Unlock()
+	sMutex.Lock()
+	defer sMutex.Unlock()
 
 	glg.Debug("Stopping motion")
 
 	if started {
-		stopMotion()
+		err = stopMotion()
 	} else {
 		glg.Warn("motion is already stopped")
 	}
@@ -52,8 +58,8 @@ func Shutdown() error {
 func Restart() error {
 	var err error
 	var detection bool
-	mu.Lock()
-	defer mu.Unlock()
+	sMutex.Lock()
+	defer sMutex.Unlock()
 
 	glg.Debug("Restarting motion")
 
@@ -74,8 +80,8 @@ func Restart() error {
 }
 
 func IsStarted() bool {
-	mu.Lock()
-	defer mu.Unlock()
+	sMutex.Lock()
+	defer sMutex.Unlock()
 	return started
 }
 
@@ -97,6 +103,7 @@ func readPid() (int, error) {
 
 func startMotion(motionDetectionStartup bool) error {
 	var err error
+
 	if motionDetectionStartup {
 		err = exec.Command("motion", "-b", "-c", motionConfigFile).Run()
 	} else {
@@ -142,7 +149,12 @@ func waitDie() error {
 func waitLive() error {
 	req := gorequest.New()
 	i, secs := 0, 15
-	for _, _, errs := req.Get(GetBaseURL()).End(); errs != nil && i < secs; _, _, errs = req.Get(GetBaseURL()).End() {
+	for resp, body, errs := req.Get(GetBaseURL()).End(); i < secs; resp, body, errs = req.Get(GetBaseURL()).End() {
+
+		if errs != nil && resp.StatusCode == http.StatusOK && utils.RegexMustMatch(waitLiveRegex, body) {
+			break
+		}
+
 		glg.Debugf("Waiting motion to become available (attempts: %d/%d)", i, secs)
 		time.Sleep(time.Second)
 		i++

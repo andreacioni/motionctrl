@@ -3,7 +3,6 @@ package motion
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"sync"
 
@@ -14,51 +13,35 @@ import (
 )
 
 var (
-	mu               sync.Mutex
-	started          bool
+	sMutex  sync.Mutex
+	started bool
+
 	motionConfigFile string
 )
 
 func Init(configFile string, autostart bool, detection bool) error {
+	sMutex.Lock()
+	defer sMutex.Unlock()
 
-	err := checkInstall()
-
-	if err != nil {
-		return fmt.Errorf("Motion not found (%s)", err)
+	if err := checkInstall(); err != nil {
+		return fmt.Errorf("Motion not found: %v", err)
 	}
 
-	if configFile != "" {
-		_, err = os.Stat(configFile)
-		if err != nil {
-			return fmt.Errorf("Cannot open file %s", configFile)
-		}
-
-		glg.Infof("Motion config file specified: %s", configFile)
-	} else {
-		return fmt.Errorf("Motion config file is not defined in configuration, %s can't start without it", version.Name)
+	if pid, err := readPid(); err == nil {
+		return fmt.Errorf("Motion (PID: %d) is started before %s. Kill motion and retry", pid, version.Name)
 	}
 
-	glg.Infof("Loading motion configuration from %s...", configFile)
-
-	err = loadConfig(configFile)
-
-	if err != nil {
-		return fmt.Errorf("Failed to load motion configuration file (%s)", err)
-	}
-
-	_, err = readPid()
-	if err == nil {
-		return fmt.Errorf("Motion is started before %s. Kill motion and retry", version.Name)
+	if err := loadConfig(configFile); err != nil {
+		return fmt.Errorf("Failed to load motion configuration: %v", err)
 	}
 
 	motionConfigFile = configFile
 
 	if autostart {
 		glg.Infof("Starting motion")
-		err = Startup(detection)
 
-		if err != nil {
-			return fmt.Errorf("Unable to startup motion (%s)", err)
+		if err := startMotion(detection); err != nil {
+			return fmt.Errorf("Unable to start motion: %v", err)
 		}
 	}
 

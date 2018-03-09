@@ -9,6 +9,7 @@ import (
 
 	"github.com/andreacioni/motionctrl/utils"
 	"github.com/andreacioni/motionctrl/version"
+	"github.com/kpango/glg"
 )
 
 const (
@@ -89,6 +90,7 @@ var ReverseConfigTypeMapper = func(s string) interface{} {
 }
 
 func loadConfig(filename string) error {
+	glg.Infof("Loading motion configuration from %s...", filename)
 
 	temp, err := parseConfig(filename)
 
