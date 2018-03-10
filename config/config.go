@@ -20,6 +20,7 @@ type Configuration struct {
 	MotionConfigFile string `json:"motionConfigFile"`
 	Username         string `json:"username"`
 	Password         string `json:"password"`
+	AppPath          string `json:"password"`
 	Ssl              SSL    `json:"ssl"`
 	Backup           Backup `json:"backup"`
 	Notify           Notify `json:"notify"`
@@ -94,6 +95,13 @@ func GetConfig() Configuration {
 	return conf
 }
 
+func GetSSLConfig() SSL {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return conf.Ssl
+}
+
 func GetBackupConfig() Backup {
 	mu.Lock()
 	defer mu.Unlock()
@@ -110,6 +118,10 @@ func GetNotifyConfig() Notify {
 
 func (c Configuration) IsEmpty() bool {
 	return reflect.DeepEqual(c, Configuration{})
+}
+
+func (c SSL) IsEmpty() bool {
+	return reflect.DeepEqual(c, SSL{})
 }
 
 func (c Notify) IsEmpty() bool {

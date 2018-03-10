@@ -62,44 +62,50 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 	var group *gin.RouterGroup
 	router := gin.Default()
 
+	// /app
+	router.Static("/app", conf.AppPath)
+
+	// /internal
 	internal := router.Group("/internal", isLocalhost)
 
 	for path, handler := range internalHandlersMap {
 		internal.Handle(handler.method, path, handler.f)
 	}
 
+	// /api
+
 	if conf.Username != "" && conf.Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = router.Group("/", gin.BasicAuth(gin.Accounts{conf.Username: conf.Password}), needMotionUp)
+		group = router.Group("/api", gin.BasicAuth(gin.Accounts{conf.Username: conf.Password}), needMotionUp)
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = router.Group("/", needMotionUp)
+		group = router.Group("/api", needMotionUp)
 	}
 
 	for path, handler := range handlersMap {
 		group.Handle(handler.method, path, handler.f)
 	}
 
-	if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl.CertFile, conf.Ssl.KeyFile); err != nil {
+	if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl); err != nil {
 		return fmt.Errorf("ListenAndServeTLS fail: %v", err)
 	}
 
 	return nil
 }
 
-func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort, certFile, keyFile string) error {
+func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort string, sslConf config.SSL) error {
 	server := endless.NewServer(addressPort, router)
 
 	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGINT, shutdownHook)
 	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGTERM, shutdownHook)
 
-	if certFile != "" && keyFile != "" {
-		glg.Infof("SSL/TLS enabled using certificate: %s, key: %s", certFile, keyFile)
-		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+	if sslConf.IsEmpty() {
+		glg.Infof("SSL/TLS enabled for API using certificate: %s, key: %s", sslConf.CertFile, sslConf.KeyFile)
+		if err := server.ListenAndServeTLS(sslConf.CertFile, sslConf.KeyFile); err != nil {
 			return err
 		}
 	} else {
-		glg.Warn("SSL/TLS NOT enabled")
+		glg.Warn("SSL/TLS NOT enabled for API")
 		if err := server.ListenAndServe(); err != nil {
 			return err
 		}

@@ -6,6 +6,8 @@
     "username" : "user",
     "password" : "pass",
 
+    "appPath" : "/path/to/app",
+
     "ssl" : {
         "key" : "/path/to/key.key",
         "cert" : "/path/to/cert.pem"
