@@ -39,17 +39,26 @@ var handlersMap = map[string]MethodHandler{
 	"/control/shutdown": MethodHandler{method: http.MethodGet, f: stopHandler},
 	"/control/status":   MethodHandler{method: http.MethodGet, f: statusHandler},
 	"/control/restart":  MethodHandler{method: http.MethodGet, f: restartHandler},
+
 	"/detection/status": MethodHandler{method: http.MethodGet, f: isMotionDetectionEnabled},
 	"/detection/start":  MethodHandler{method: http.MethodGet, f: startDetectionHandler},
 	"/detection/stop":   MethodHandler{method: http.MethodGet, f: stopDetectionHandler},
-	"/camera/stream":    MethodHandler{method: http.MethodGet, f: proxyStream},
-	"/camera/snapshot":  MethodHandler{method: http.MethodGet, f: takeSnapshot},
-	"/config/list":      MethodHandler{method: http.MethodGet, f: listConfigHandler},
-	"/config/set":       MethodHandler{method: http.MethodGet, f: setConfigHandler},
-	"/config/get":       MethodHandler{method: http.MethodGet, f: getConfigHandler},
-	"/config/write":     MethodHandler{method: http.MethodGet, f: writeConfigHandler},
-	"/backup/status":    MethodHandler{method: http.MethodGet, f: backupStatus},
-	"/backup/launch":    MethodHandler{method: http.MethodGet, f: backupLaunch},
+
+	"/camera/stream":   MethodHandler{method: http.MethodGet, f: proxyStream},
+	"/camera/snapshot": MethodHandler{method: http.MethodGet, f: takeSnapshot},
+
+	"/config/list":  MethodHandler{method: http.MethodGet, f: listConfigHandler},
+	"/config/set":   MethodHandler{method: http.MethodGet, f: setConfigHandler},
+	"/config/get":   MethodHandler{method: http.MethodGet, f: getConfigHandler},
+	"/config/write": MethodHandler{method: http.MethodGet, f: writeConfigHandler},
+
+	"/targetdir/list":             MethodHandler{method: http.MethodGet, f: listTargetDir},
+	"/targetdir/size":             MethodHandler{method: http.MethodGet, f: sizeTargetDir},
+	"/targetdir/:filename":        MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
+	"/targetdir/:filename/remove": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
+
+	"/backup/status": MethodHandler{method: http.MethodGet, f: backupStatus},
+	"/backup/launch": MethodHandler{method: http.MethodGet, f: backupLaunch},
 }
 
 func Init(conf config.Configuration, shutdownHook func()) error {
@@ -63,7 +72,10 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 	router := gin.Default()
 
 	// /app
-	router.Static("/app", conf.AppPath)
+	if conf.AppPath != "" {
+		glg.Infof("Serving static files from %s to /app", conf.AppPath)
+		router.Static("/app", conf.AppPath)
+	}
 
 	// /internal
 	internal := router.Group("/internal", isLocalhost)
@@ -87,7 +99,7 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 	}
 
 	if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl); err != nil {
-		return fmt.Errorf("ListenAndServeTLS fail: %v", err)
+		return fmt.Errorf("unable to listen & serve: %v", err)
 	}
 
 	return nil
@@ -320,5 +332,41 @@ func backupLaunch(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "backup service is running now"})
+	}
+}
+
+func listTargetDir(c *gin.Context) {
+	if fileList, err := motion.TargetDirListFiles(); err == nil {
+		c.JSON(http.StatusOK, fileList)
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to list files in target dir: %v", err)})
+	}
+}
+
+func sizeTargetDir(c *gin.Context) {
+	if size, err := motion.TargetDirSize(); err == nil {
+		c.JSON(http.StatusOK, gin.H{"size": size})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to list files in target dir: %v", err)})
+	}
+}
+
+func retrieveFromTargetDir(c *gin.Context) {
+	fileName := c.Param("filename")
+
+	if filePath, err := motion.TargetDirGetFile(fileName); err == nil {
+		c.File(filePath)
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to get: %s in target dir: %v", fileName, err)})
+	}
+}
+
+func removeFromTargetDir(c *gin.Context) {
+	fileName := c.Param("filename")
+
+	if err := motion.TargetDirRemoveFile(fileName); err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s successfully removed", fileName)})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to remove: %s in target dir: %v", fileName, err)})
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/andreacioni/motionctrl/utils"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/andreacioni/motionctrl/config"
@@ -26,20 +28,6 @@ func TestBackupSize(t *testing.T) {
 func TestNoBackupDefined(t *testing.T) {
 	_, err := buildUploadService(config.Backup{})
 	require.Error(t, err)
-}
-
-func TestListFiles(t *testing.T) {
-	_, err := os.Create("../testfile")
-	require.NoError(t, err)
-
-	_, list, _, err := listFile("../")
-	require.NoError(t, err)
-	require.EqualValues(t, 5, len(list))
-	fmt.Printf("%+v\n", list)
-
-	err = os.Remove("../testfile")
-	require.NoError(t, err)
-
 }
 
 func TestBackupMethod(t *testing.T) {
@@ -71,7 +59,7 @@ func TestJoinArchive(t *testing.T) {
 }
 
 func TestArchive(t *testing.T) {
-	_, fileList, _, err := listFile(".")
+	_, fileList, _, err := utils.ListFiles(".", backuppableFile)
 	require.NoError(t, err)
 	fmt.Println(fileList)
 

@@ -207,34 +207,6 @@ func buildUploadService(conf config.Backup) (UploadService, error) {
 	return nil, err
 }
 
-func listFile(targetDirectory string) ([]os.FileInfo, []string, int64, error) {
-	fileList := []string{}
-	fileInfo := []os.FileInfo{}
-	var folderSize int64
-
-	fInfo, err := ioutil.ReadDir(targetDirectory)
-
-	if err != nil {
-		return nil, nil, 0, err
-	}
-
-	//We get only regular files (no directory, symbolic files, hidden files) and older than 30 sec
-	for _, f := range fInfo {
-		if backuppableFile(f) {
-			absPath, err := filepath.Abs(filepath.Join(targetDirectory, f.Name()))
-			if err != nil {
-				return nil, nil, 0, err
-			}
-			fileList = append(fileList, absPath)
-			fileInfo = append(fileInfo, f)
-			folderSize += f.Size()
-		}
-	}
-
-	return fileInfo, fileList, folderSize, err
-
-}
-
 func archiveFiles(fileList []string) (string, error) {
 	glg.Debugf("Now compressing: %+v", fileList)
 
@@ -322,7 +294,7 @@ func removeFiles(filePath []string) error {
 }
 
 func checkSize() {
-	_, _, folderSize, err := listFile(targetDirectory)
+	_, _, folderSize, err := utils.ListFiles(targetDirectory, backuppableFile)
 	if err != nil {
 		glg.Errorf("Failed to evaluate folder size: %v", err)
 	} else {
@@ -342,7 +314,7 @@ func backupWorker() {
 
 		setStatus(StateActiveRunning)
 
-		_, fileList, _, err := listFile(targetDirectory)
+		_, fileList, _, err := utils.ListFiles(targetDirectory, backuppableFile)
 
 		glg.Debugf("Backup file list: %+v", fileList)
 
