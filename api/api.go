@@ -47,15 +47,15 @@ var handlersMap = map[string]MethodHandler{
 	"/camera/stream":   MethodHandler{method: http.MethodGet, f: proxyStream},
 	"/camera/snapshot": MethodHandler{method: http.MethodGet, f: takeSnapshot},
 
-	"/config/list":  MethodHandler{method: http.MethodGet, f: listConfigHandler},
-	"/config/set":   MethodHandler{method: http.MethodGet, f: setConfigHandler},
-	"/config/get":   MethodHandler{method: http.MethodGet, f: getConfigHandler},
-	"/config/write": MethodHandler{method: http.MethodGet, f: writeConfigHandler},
+	"/config/list":       MethodHandler{method: http.MethodGet, f: listConfigHandler},
+	"/config/set":        MethodHandler{method: http.MethodGet, f: setConfigHandler},
+	"/config/get/:param": MethodHandler{method: http.MethodGet, f: getConfigHandler},
+	"/config/write":      MethodHandler{method: http.MethodGet, f: writeConfigHandler},
 
-	"/targetdir/list":   MethodHandler{method: http.MethodGet, f: listTargetDir},
-	"/targetdir/size":   MethodHandler{method: http.MethodGet, f: sizeTargetDir},
-	"/targetdir/get":    MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
-	"/targetdir/remove": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
+	"/targetdir/list":             MethodHandler{method: http.MethodGet, f: listTargetDir},
+	"/targetdir/size":             MethodHandler{method: http.MethodGet, f: sizeTargetDir},
+	"/targetdir/get/:filename":    MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
+	"/targetdir/remove/:filename": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
 
 	"/backup/status": MethodHandler{method: http.MethodGet, f: backupStatus},
 	"/backup/launch": MethodHandler{method: http.MethodGet, f: backupLaunch},
@@ -267,7 +267,7 @@ func listConfigHandler(c *gin.Context) {
 }
 
 func getConfigHandler(c *gin.Context) {
-	query := c.Query("query")
+	query := c.Param("param")
 
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "'query' parameter not specified"})
@@ -352,7 +352,7 @@ func sizeTargetDir(c *gin.Context) {
 }
 
 func retrieveFromTargetDir(c *gin.Context) {
-	fileName := c.Query("filename")
+	fileName := c.Param("filename")
 
 	if fileName != "" {
 		if filePath, err := motion.TargetDirGetFile(fileName); err == nil {
@@ -367,7 +367,7 @@ func retrieveFromTargetDir(c *gin.Context) {
 }
 
 func removeFromTargetDir(c *gin.Context) {
-	fileName := c.Query("filename")
+	fileName := c.Param("filename")
 
 	if fileName != "" {
 		if err := motion.TargetDirRemoveFile(fileName); err == nil {
