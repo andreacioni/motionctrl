@@ -10,7 +10,7 @@ import (
 )
 
 type TargetDirFile struct {
-	Name         string    `json:"filename"`
+	Name         string    `json:"name"`
 	CreationTime time.Time `json:"creationDate"`
 }
 

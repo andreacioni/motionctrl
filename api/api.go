@@ -52,10 +52,10 @@ var handlersMap = map[string]MethodHandler{
 	"/config/get":   MethodHandler{method: http.MethodGet, f: getConfigHandler},
 	"/config/write": MethodHandler{method: http.MethodGet, f: writeConfigHandler},
 
-	"/targetdir/list":             MethodHandler{method: http.MethodGet, f: listTargetDir},
-	"/targetdir/size":             MethodHandler{method: http.MethodGet, f: sizeTargetDir},
-	"/targetdir/:filename":        MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
-	"/targetdir/:filename/remove": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
+	"/targetdir/list":   MethodHandler{method: http.MethodGet, f: listTargetDir},
+	"/targetdir/size":   MethodHandler{method: http.MethodGet, f: sizeTargetDir},
+	"/targetdir/get":    MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
+	"/targetdir/remove": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
 
 	"/backup/status": MethodHandler{method: http.MethodGet, f: backupStatus},
 	"/backup/launch": MethodHandler{method: http.MethodGet, f: backupLaunch},
@@ -111,7 +111,7 @@ func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort string,
 	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGINT, shutdownHook)
 	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGTERM, shutdownHook)
 
-	if sslConf.IsEmpty() {
+	if !sslConf.IsEmpty() {
 		glg.Infof("SSL/TLS enabled for API using certificate: %s, key: %s", sslConf.CertFile, sslConf.KeyFile)
 		if err := server.ListenAndServeTLS(sslConf.CertFile, sslConf.KeyFile); err != nil {
 			return err
@@ -149,7 +149,7 @@ func isLocalhost(c *gin.Context) {
 
 // needMotionUp Every request, except for /control* requests, need motion up and running
 func needMotionUp(c *gin.Context) {
-	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/control") {
+	if !strings.HasPrefix(fmt.Sprint(c.Request.URL), "/api/control") {
 
 		if motionStarted, err := motion.IsStarted(); err == nil {
 			if !motionStarted {
@@ -352,21 +352,31 @@ func sizeTargetDir(c *gin.Context) {
 }
 
 func retrieveFromTargetDir(c *gin.Context) {
-	fileName := c.Param("filename")
+	fileName := c.Query("filename")
 
-	if filePath, err := motion.TargetDirGetFile(fileName); err == nil {
-		c.File(filePath)
+	if fileName != "" {
+		if filePath, err := motion.TargetDirGetFile(fileName); err == nil {
+			c.File(filePath)
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to get: %s in target dir: %v", fileName, err)})
+		}
 	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to get: %s in target dir: %v", fileName, err)})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "missing 'filename' parameter"})
 	}
+
 }
 
 func removeFromTargetDir(c *gin.Context) {
-	fileName := c.Param("filename")
+	fileName := c.Query("filename")
 
-	if err := motion.TargetDirRemoveFile(fileName); err == nil {
-		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s successfully removed", fileName)})
+	if fileName != "" {
+		if err := motion.TargetDirRemoveFile(fileName); err == nil {
+			c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s successfully removed", fileName)})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to remove: %s in target dir: %v", fileName, err)})
+		}
 	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to remove: %s in target dir: %v", fileName, err)})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "missing 'filename' parameter"})
 	}
+
 }

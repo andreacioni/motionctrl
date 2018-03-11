@@ -21,3 +21,6 @@ dist/
 
 # Build artifact
 motionctrl
+
+# Google Drive token
+.google_drive_motionctrl.json
