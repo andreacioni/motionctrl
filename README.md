@@ -100,7 +100,7 @@ All the following APIs are accessible from ```/api```
   - [/status](#/backup/status)
   - [/launch](#/backup/launch)
 
-## /control/startup
+### /control/startup
 
 - **Description**: launch motion
 - **Method**: ``` GET ```
@@ -110,18 +110,18 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion started succefully
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 400: detection parameter **must** be ```true``` or ```false```
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
-## /control/shutdown
+### /control/shutdown
 
 - **Description**: shutdown motion
 - **Method**: ``` GET ```
@@ -130,15 +130,15 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion shutdown succefully
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /control/restart
+### /control/restart
 
 - **Description**: restart motion
 - **Method**: ``` GET ```
@@ -147,14 +147,14 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion restarted succefully
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```   
-## /control/status
+### /control/status
 
 - **Description**: restart motion
 - **Method**: ``` GET ```
@@ -163,15 +163,15 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion status retrieved succefully
     - JSON
-    ```json
+    ```
     {"motionStarted": true|false}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```   
 
-## /detection/start
+### /detection/start
 
 - **Description**: start motion detection
 - **Method**: ``` GET ```
@@ -180,19 +180,19 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion detection enabled
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /detection/stop
+### /detection/stop
 
 - **Description**: stop motion detection
 - **Method**: ``` GET ```
@@ -201,19 +201,19 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion detection paused
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /detection/status
+### /detection/status
 
 - **Description**: return the current state of motion detection
 - **Method**: ``` GET ```
@@ -222,19 +222,19 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion detection status retrieved
     - JSON
-    ```json
+    ```
     {"motionDetectionEnabled": true|false}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /config/list
+### /config/list
 
 - **Description**: list all motion configuration
 - **Method**: ``` GET ```
@@ -243,19 +243,19 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion detection status retrieved
     - JSON
-    ```json
+    ```
     {<CONFIG_KEY1>: <CONFIG_VALUE1>, <CONFIG_KEY2>: <CONFIG_VALUE2>, ...}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /config/get/:config:
+### /config/get/:config:
 
 - **Description**: get the specified configuration parameter
 - **Method**: ``` GET ```
@@ -264,7 +264,7 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: motion detection status retrieved
     - JSON
-    ```json
+    ```
     { 
       <CONFIG_KEY1>: <CONFIG_VALUE1>,
       <CONFIG_KEY2>: <CONFIG_VALUE2>,
@@ -272,15 +272,15 @@ All the following APIs are accessible from ```/api```
     }
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /config/set
+### /config/set
 
 - **Description**: set the specified configuration to a specified value
 - **Method**: ``` GET ```
@@ -291,19 +291,19 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: configuration set correctly
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /config/write
+### /config/write
 
 - **Description**: write current configuration to motion configuration file
 - **Method**: ``` GET ```
@@ -312,18 +312,18 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: configuration set correctly
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
-## /camera/stream
+### /camera/stream
 
 - **Description**: camera stream
 - **Method**: ``` GET ```
@@ -333,15 +333,15 @@ All the following APIs are accessible from ```/api```
     - 200: streaming
     - MJPEG stream
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /camera/snapshot
+### /camera/snapshot
 
 - **Description**: capture and retrieve snapshot from camera
 - **Method**: ``` GET ```
@@ -351,15 +351,15 @@ All the following APIs are accessible from ```/api```
     - 200: snapshot
     - Image
     - 409: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /targetdir/list
+### /targetdir/list
 
 - **Description**: list all files in *target_dir*
 - **Method**: ``` GET ```
@@ -368,7 +368,7 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: snapshot
     - JSON
-    ```json
+    ```
     [
       {
         "name": <STRING>,
@@ -378,11 +378,11 @@ All the following APIs are accessible from ```/api```
     ]
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /targetdir/size
+### /targetdir/size
 
 - **Description**: evaluate the *target_dir* folder size
 - **Method**: ``` GET ```
@@ -391,15 +391,15 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: size evaluated succefully
     - JSON
-    ```json
+    ```
     { "size": <INTEGER> }
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
-## /targetdir/get/:filename:
+### /targetdir/get/:filename:
 
 - **Description**: retrieve *filename* from *target_dir*
 - **Method**: ``` GET ```
@@ -409,10 +409,10 @@ All the following APIs are accessible from ```/api```
     - 200: file retrieved correctly
       - Requested file from *target_dir*
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
-## /targetdir/remove/:filename:
+### /targetdir/remove/:filename:
 
 - **Description**: remove *filename* from *target_dir*
 - **Method**: ``` GET ```
@@ -421,14 +421,14 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: file removed correctly
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
-## /backup/status
+### /backup/status
 
 - **Description**: get the current state of backup service
 - **Method**: ``` GET ```
@@ -437,14 +437,14 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: status retrieved correctly
     - JSON
-    ```json
+    ```
     {"status": "ACTIVE_IDLE" | "ACTIVE_RUNNING" | "NOT_ACTIVE"}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
-## /backup/launch
+### /backup/launch
 
 - **Description**: run backup service now
 - **Method**: ``` GET ```
@@ -453,11 +453,11 @@ All the following APIs are accessible from ```/api```
   - *Status Code + Body*:
     - 200: backup service stared
     - JSON
-    ```json
+    ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
-    ```json
+    ```
     {"message": <STRING>}
     ```
 
