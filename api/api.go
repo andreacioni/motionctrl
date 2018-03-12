@@ -1,16 +1,18 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
+	"time"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/kpango/glg"
 
@@ -105,23 +107,42 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 	return nil
 }
 
+//From: https://github.com/gin-gonic/gin#graceful-restart-or-stop
 func listenAndServe(router *gin.Engine, shutdownHook func(), addressPort string, sslConf config.SSL) error {
-	server := endless.NewServer(addressPort, router)
-
-	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGINT, shutdownHook)
-	server.RegisterSignalHook(endless.PRE_SIGNAL, syscall.SIGTERM, shutdownHook)
-
-	if !sslConf.IsEmpty() {
-		glg.Infof("SSL/TLS enabled for API using certificate: %s, key: %s", sslConf.CertFile, sslConf.KeyFile)
-		if err := server.ListenAndServeTLS(sslConf.CertFile, sslConf.KeyFile); err != nil {
-			return err
-		}
-	} else {
-		glg.Warn("SSL/TLS NOT enabled for API")
-		if err := server.ListenAndServe(); err != nil {
-			return err
-		}
+	server := &http.Server{
+		Addr:    addressPort,
+		Handler: router,
 	}
+
+	go func() {
+		if !sslConf.IsEmpty() {
+			glg.Infof("SSL/TLS enabled for API using certificate: %s, key: %s", sslConf.CertFile, sslConf.KeyFile)
+			if err := server.ListenAndServeTLS(sslConf.CertFile, sslConf.KeyFile); err != nil {
+				glg.Error(err)
+			}
+		} else {
+			glg.Warn("SSL/TLS NOT enabled for API")
+			if err := server.ListenAndServe(); err != nil {
+				glg.Error(err)
+			}
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	glg.Debug("Shutdown Server ...")
+
+	shutdownHook()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		glg.Fatal("Server Shutdown:", err)
+	}
+	glg.Info("Server exiting")
 
 	return nil
 }
