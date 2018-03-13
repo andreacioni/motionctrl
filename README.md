@@ -74,31 +74,31 @@ Accepted command line arguments ( ```$> ./motionctrl -h```):
 
 All the following APIs are accessible from ```/api```
 
-- [/control](#/control/startup)
-  - [/startup](#/control/startup)
-  - [/shutdown](#/control/shutdown)
-  - [/restart](#/control/restart)
-  - [/status](#/control/status)
-- [/detection](#/detection/start)
-  - [/start](#/detection/start)
-  - [/stop](#/detection/stop)
-  - [/status](#/detection/status)
-- [/config](#/config/list)
-  - [/list](#/config/list)
-  - [/get](#/config/get/:config:)
-  - [/set](#/config/set)
-  - [/write](#/config/write)
-- [/camera](#/camera/stream)
-  - [/stream](#/camera/stream)
-  - [/snapshot](#/camera/snapshot)
-- [/targetdir](#/targetdir/list)
-  - [/list](#/targetdir/list)
-  - [/size](#/targetdir/size)
-  - [/get](#/targetdir/get/:filename:)
-  - [/remove](#/targetdir/remove/:filename:)
-- [/backup](#/backup/status)
-  - [/status](#/backup/status)
-  - [/launch](#/backup/launch)
+- [/control](#controlstartup)
+  - [/startup](#controlstartup)
+  - [/shutdown](#controlshutdown)
+  - [/restart](#controlrestart)
+  - [/status](#controlstatus)
+- [/detection](#detectionstart)
+  - [/start](#detectionstart)
+  - [/stop](#detectionstop)
+  - [/status](#detectionstatus)
+- [/config](#configlist)
+  - [/list](#configlist)
+  - [/get](#configgetconfig)
+  - [/set](#configset)
+  - [/write](#configwrite)
+- [/camera](#camerastream)
+  - [/stream](#camerastream)
+  - [/snapshot](#camerasnapshot)
+- [/targetdir](#targetdirlist)
+  - [/list](#targetdirlist)
+  - [/size](#targetdirsize)
+  - [/get](#targetdirgetfilename)
+  - [/remove](#targetdirremovefilename)
+- [/backup](#backupstatus)
+  - [/status](#backupstatus)
+  - [/launch](#backuplaunch)
 
 ### /control/startup
 
@@ -460,6 +460,34 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+### Internal APIs
+
+There are some APIs that are not accessible directly by the user. These APIs (accessible from ```/internal```) are necessary to let *motion* communicate events to *motionctrl*.
+
+Following steps are needed only if you want to enable the built-in [notification service](#notification) available in *motionctrl*
+
+- Install ```curl```
+- Open your motion configuration file (e.g. /etc/motion/motion.conf)
+- Set ```on_event_start``` and ```on_event_end``` ```on_picture_save``` to:
+```
+# Command to be executed when an event starts. (default: none)
+# An event starts at first motion detected after a period of no motion defined by event_gap
+on_event_start curl 
+
+# Command to be executed when an event ends after a period of no motion
+# (default: none). The period of no motion is defined by option event_gap.
+on_event_end 
+
+# Command to be executed when a picture (.ppm|.jpg) is saved (default: none)
+# To give the filename as an argument to a command append it with %f
+on_picture_save 
+```
+
+**NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```.
+
+# Backup
+
+# Notification
 
 # FAQ
 
