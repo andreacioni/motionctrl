@@ -549,7 +549,7 @@ on_event_end curl http://localhost:8888/internal/event/end
 on_picture_save curl http://localhost:8888/internal/event/picture/saved?picturepath=%f
 ```
 
-**NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```.
+**NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```).
 
 # FAQ
 
