@@ -464,30 +464,92 @@ All the following APIs are accessible from ```/api```
 
 There are some APIs that are not accessible directly by the user. These APIs (accessible from ```/internal```) are necessary to let *motion* communicate events to *motionctrl*.
 
-Following steps are needed only if you want to enable the built-in [notification service](#notification) available in *motionctrl*
+This APIs are required by built-in [notification service](#notification) of *motionctrl*
+
+# Backup
+
+Following steps are needed only if you want to enable backup service available in *motionctrl*
+
+*motionctrl* allows you to backup files produced by *motion* (images, videos) to your Google Drive account.
+
+Here below some example showing, only, backup section of motionctrl config file:
+
+1. Manual backup trigger it with (/api/backup/launch)[#backuplaunch]
+```json
+"backup" :  {
+        "when" : "manual",
+        "method" : "google",
+    }
+```
+
+2. Automatic backup when ```target_dir``` size is greater than 10 Mbyte
+```json
+"backup" :  {
+        "when" : "10MB",
+        "method" : "google",
+    }
+```
+3. Automatic backup every day at 22:00 size is greater than 10 Mbyte
+```json
+"backup" :  {
+        "when" : "0 22 * * *",
+        "method" : "google",
+    }
+```
+
+4. Automatic backup every day at 22:00
+```json
+"backup" :  {
+        "when" : "0 22 * * *",
+        "method" : "google",
+    }
+```
+
+5. Automatic backup every day at 22:00, encrypt every single file before upload
+```json
+"backup" :  {
+        "when" : "0 22 * * *",
+        "method" : "google",
+        "encryptionKey": "secret_password",
+    }
+```
+
+6. Automatic backup every day at 22:00, create archives with max 10 files and encrypt them before upload
+```json
+"backup" :  {
+        "when" : "0 22 * * *",
+        "method" : "google",
+        "encryptionKey": "secret_password",
+        "archive":true,
+        "filePerArchive" : 10
+    }
+```
+
+In order to correctly login to your account you must simply run *motionctrl* and follow the istructions on the command line.
+
+# Notification
+
+Following steps are needed only if you want to enable notification service available in *motionctrl*
 
 - Install ```curl```
 - Open your motion configuration file (e.g. /etc/motion/motion.conf)
 - Set ```on_event_start``` and ```on_event_end``` ```on_picture_save``` to:
+
 ```
 # Command to be executed when an event starts. (default: none)
 # An event starts at first motion detected after a period of no motion defined by event_gap
-on_event_start curl 
+on_event_start curl http://localhost:8888/internal/event/start
 
 # Command to be executed when an event ends after a period of no motion
 # (default: none). The period of no motion is defined by option event_gap.
-on_event_end 
+on_event_end curl http://localhost:8888/internal/event/end
 
 # Command to be executed when a picture (.ppm|.jpg) is saved (default: none)
 # To give the filename as an argument to a command append it with %f
-on_picture_save 
+on_picture_save curl http://localhost:8888/internal/event/picture/saved?picturepath=%f
 ```
 
 **NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```.
-
-# Backup
-
-# Notification
 
 # FAQ
 
