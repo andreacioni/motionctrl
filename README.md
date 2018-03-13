@@ -183,7 +183,7 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -204,7 +204,7 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -225,7 +225,7 @@ All the following APIs are accessible from ```/api```
     ```
     {"motionDetectionEnabled": true|false}
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -241,12 +241,16 @@ All the following APIs are accessible from ```/api```
 - **Parameters**: N.D.
 - **Return**:
   - *Status Code + Body*:
-    - 200: motion detection status retrieved
+    - 200: configuration list retrieved correctly
     - JSON
     ```
-    {<CONFIG_KEY1>: <CONFIG_VALUE1>, <CONFIG_KEY2>: <CONFIG_VALUE2>, ...}
+    { 
+      <CONFIG_KEY1>: <CONFIG_VALUE1>,
+      <CONFIG_KEY2>: <CONFIG_VALUE2>,
+      ...
+    }
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -262,16 +266,12 @@ All the following APIs are accessible from ```/api```
 - **Parameters**: N.D.
 - **Return**:
   - *Status Code + Body*:
-    - 200: motion detection status retrieved
+    - 200: configuration parameter retrieved correctly
     - JSON
     ```
-    { 
-      <CONFIG_KEY1>: <CONFIG_VALUE1>,
-      <CONFIG_KEY2>: <CONFIG_VALUE2>,
-      ...
-    }
+    { <CONFIG_KEY>: <CONFIG_VALUE> }
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -294,7 +294,7 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
     ```
     {"message": <STRING>}
     ```
@@ -310,7 +310,7 @@ All the following APIs are accessible from ```/api```
 - **Parameters**: N.D.
 - **Return**:
   - *Status Code + Body*:
-    - 200: configuration set correctly
+    - 200: configuration wrote correctly to file
     - JSON
     ```
     {"message": <STRING>}
