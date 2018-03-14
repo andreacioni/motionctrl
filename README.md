@@ -109,7 +109,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion started succefully
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
@@ -121,6 +121,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+ - Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/startup?detection=true
+
+Output: {"message":"motion started"}
+ ```
 ### /control/shutdown
 
 - **Description**: shutdown motion
@@ -129,14 +135,21 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion shutdown succefully
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+ - Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/shutdown
+
+Output: {"message":"motion stopped"}
+ ```
 
 ### /control/restart
 
@@ -146,14 +159,22 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion restarted succefully
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```   
+ - Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/restart
+
+Output: {"message":"motion restarted"}
+ ```
+
 ### /control/status
 
 - **Description**: restart motion
@@ -162,14 +183,21 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion status retrieved succefully
-    - JSON
+    - Response type: JSON
     ```
     {"motionStarted": true|false}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```   
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/status
+
+Output: {"motionStarted":false}
+ ```
 
 ### /detection/start
 
@@ -179,18 +207,26 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion detection enabled
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/detection/start
+
+{"message":"motion detection started"}
+ ```
 
 ### /detection/stop
 
@@ -200,7 +236,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion detection paused
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
@@ -212,6 +248,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/detection/stop
+
+{"message":"motion detection paused"}
+ ```
 
 ### /detection/status
 
@@ -221,7 +263,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: motion detection status retrieved
-    - JSON
+    - Response type: JSON
     ```
     {"motionDetectionEnabled": true|false}
     ```
@@ -233,6 +275,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/detection/status
+
+{"motionDetectionEnabled":false}
+ ```
 
 ### /config/list
 
@@ -242,7 +290,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: configuration list retrieved correctly
-    - JSON
+    - Response type: JSON
     ```
     { 
       <CONFIG_KEY1>: <CONFIG_VALUE1>,
@@ -251,13 +299,21 @@ All the following APIs are accessible from ```/api```
     }
     ```
     - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/config/list
+
+{"area_detect":null,"auto_brightness":0,"camera":null,"camera_dir":null,"camera_id":0,"camera_name":null,"daemon":true," ... }
+ ```
 
 ### /config/get/:config:
 
@@ -267,18 +323,26 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: configuration parameter retrieved correctly
-    - JSON
+    - Response type: JSON
     ```
     { <CONFIG_KEY>: <CONFIG_VALUE> }
     ```
     - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/config/get/event_gap
+
+{"event_gap":20}
+ ```
 
 ### /config/set
 
@@ -290,18 +354,26 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: configuration set correctly
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/config/set?event_gap=60&writeback=true
+
+{"event_gap":60}
+ ```
 
 ### /config/write
 
@@ -311,18 +383,27 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: configuration wrote correctly to file
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
-    - 409: generic internal server error
+    - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/config/write
+
+{"message":"configuration written to file"}
+ ```
+
 ### /camera/stream
 
 - **Description**: camera stream
@@ -331,15 +412,23 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: streaming
-    - MJPEG stream
-    - 409: generic internal server error
+    - Response type: MJPEG stream
+    - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/startup
+
+Open your browser and go to: http://localhost:8888/api/camera/stream
+ ```
 
 ### /camera/snapshot
 
@@ -349,8 +438,9 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: snapshot
-    - Image
-    - 409: generic internal server error
+    - Response type: image
+    - 409: motion not started yet
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
@@ -358,6 +448,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/startup
+
+Open your browser and go to: http://localhost:8888/api/camera/shapshot
+ ```
 
 ### /targetdir/list
 
@@ -367,7 +463,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: snapshot
-    - JSON
+    - Response type: JSON
     ```
     [
       {
@@ -381,6 +477,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/targetdir/list
+
+Output: [{"name":"01-20180314152202-01.jpg","creationDate":"2018-03-14T15:22:02.88866395+01:00"},{"name":"01-20180314152202.mkv","creationDate":"2018-03-14T15:22:16.728497457+01:00"}, ... ]
+ ```
 
 ### /targetdir/size
 
@@ -390,7 +492,7 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: size evaluated succefully
-    - JSON
+    - Response type: JSON
     ```
     { "size": <INTEGER> }
     ```
@@ -398,6 +500,12 @@ All the following APIs are accessible from ```/api```
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/targetdir/size
+
+Output: {"size":3753260} ~ 3.75 MB
+ ```
 
 ### /targetdir/get/:filename:
 
@@ -407,11 +515,17 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: file retrieved correctly
-      - Requested file from *target_dir*
+    - Response type: file from *target_dir*
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+Open your browser and go to: http://10.8.0.1:8888/api/targetdir/get/01-20180314152211-01.jpg
+ ```
+
 ### /targetdir/remove/:filename:
 
 - **Description**: remove *filename* from *target_dir*
@@ -420,14 +534,22 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: file removed correctly
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/targetdir/remove/06-20180314114422-01.jpg
+
+Output: {"message":"06-20180314114422-01.jpg successfully removed"}
+ ```
+
 ### /backup/status
 
 - **Description**: get the current state of backup service
@@ -436,14 +558,22 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: status retrieved correctly
-    - JSON
+    - Response type: JSON
     ```
     {"status": "ACTIVE_IDLE" | "ACTIVE_RUNNING" | "NOT_ACTIVE"}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/backup/status
+
+Output: {"status":"ACTIVE_IDLE"}
+ ```
+
 ### /backup/launch
 
 - **Description**: run backup service now
@@ -452,14 +582,22 @@ All the following APIs are accessible from ```/api```
 - **Return**:
   - *Status Code + Body*:
     - 200: backup service stared
-    - JSON
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
     - 500: generic internal server error
+    - Response type: JSON
     ```
     {"message": <STRING>}
     ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/backup/launch
+
+Output: {"message":"backup service is running now"}
+ ```
+
 ### Internal APIs
 
 There are some APIs that are not accessible directly by the user. These APIs (accessible from ```/internal```) are necessary to let *motion* communicate events to *motionctrl*.
