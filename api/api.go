@@ -27,6 +27,7 @@ import (
 type MethodHandler struct {
 	method string
 	f      func(*gin.Context)
+	m      []gin.HandlerFunc
 }
 
 var internalHandlersMap = map[string]MethodHandler{
@@ -40,19 +41,19 @@ var handlersMap = map[string]MethodHandler{
 	"/control/startup":  MethodHandler{method: http.MethodGet, f: startHandler},
 	"/control/shutdown": MethodHandler{method: http.MethodGet, f: stopHandler},
 	"/control/status":   MethodHandler{method: http.MethodGet, f: statusHandler},
-	"/control/restart":  MethodHandler{method: http.MethodGet, f: restartHandler},
+	"/control/restart":  MethodHandler{method: http.MethodGet, f: restartHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/detection/status": MethodHandler{method: http.MethodGet, f: isMotionDetectionEnabled},
-	"/detection/start":  MethodHandler{method: http.MethodGet, f: startDetectionHandler},
-	"/detection/stop":   MethodHandler{method: http.MethodGet, f: stopDetectionHandler},
+	"/detection/status": MethodHandler{method: http.MethodGet, f: isMotionDetectionEnabled, m: []gin.HandlerFunc{needMotionUp}},
+	"/detection/start":  MethodHandler{method: http.MethodGet, f: startDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/detection/stop":   MethodHandler{method: http.MethodGet, f: stopDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/camera/stream":   MethodHandler{method: http.MethodGet, f: proxyStream},
-	"/camera/snapshot": MethodHandler{method: http.MethodGet, f: takeSnapshot},
+	"/camera/stream":   MethodHandler{method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/snapshot": MethodHandler{method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/config/list":       MethodHandler{method: http.MethodGet, f: listConfigHandler},
-	"/config/set":        MethodHandler{method: http.MethodGet, f: setConfigHandler},
-	"/config/get/:param": MethodHandler{method: http.MethodGet, f: getConfigHandler},
-	"/config/write":      MethodHandler{method: http.MethodGet, f: writeConfigHandler},
+	"/config/list":       MethodHandler{method: http.MethodGet, f: listConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/set":        MethodHandler{method: http.MethodGet, f: setConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/get/:param": MethodHandler{method: http.MethodGet, f: getConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/write":      MethodHandler{method: http.MethodGet, f: writeConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
 
 	"/targetdir/list":             MethodHandler{method: http.MethodGet, f: listTargetDir},
 	"/targetdir/size":             MethodHandler{method: http.MethodGet, f: sizeTargetDir},
@@ -87,17 +88,16 @@ func Init(conf config.Configuration, shutdownHook func()) error {
 	}
 
 	// /api
-
 	if conf.Username != "" && conf.Password != "" {
 		glg.Info("Username and password defined, authentication enabled")
-		group = router.Group("/api", gin.BasicAuth(gin.Accounts{conf.Username: conf.Password}), needMotionUp)
+		group = router.Group("/api", gin.BasicAuth(gin.Accounts{conf.Username: conf.Password}))
 	} else {
 		glg.Warn("Username and password not defined, authentication disabled")
-		group = router.Group("/api", needMotionUp)
+		group = router.Group("/api")
 	}
 
 	for path, handler := range handlersMap {
-		group.Handle(handler.method, path, handler.f)
+		group.Handle(handler.method, path, append(handler.m, handler.f)...)
 	}
 
 	if err := listenAndServe(router, shutdownHook, fmt.Sprintf("%s:%d", conf.Address, conf.Port), conf.Ssl); err != nil {
