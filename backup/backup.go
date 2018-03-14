@@ -64,6 +64,11 @@ func Init(conf config.Backup, targetDir string) error {
 
 	if uploadService == nil {
 		if !conf.IsEmpty() {
+
+			if conf.Archive && conf.FilePerArchive <= 0 {
+				return fmt.Errorf("Archive files defined but 'filePerArchive' must be greater than 0")
+			}
+
 			glg.Debugf("Initializing backup service: %+v, target directory: %s", conf, targetDir)
 
 			if err = setupCronSheduler(conf); err != nil {

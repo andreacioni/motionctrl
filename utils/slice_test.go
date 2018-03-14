@@ -45,4 +45,6 @@ func TestToInt64Slice(t *testing.T) {
 
 	require.EqualValues(t, []int64{1234, 56325, 678, 2357, 3566, -1}, conv)
 
+	_, err = ToInt64Slice(nil)
+	require.NoError(t, err)
 }
