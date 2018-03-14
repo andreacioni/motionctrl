@@ -163,6 +163,11 @@ Output: {"message":"motion stopped"}
     ```
     {"message": <STRING>}
     ```
+    - 409: motion not started yet
+    - Response type: JSON
+    ```
+    {"message": <STRING>}
+    ```
     - 500: generic internal server error
     - Response type: JSON
     ```
