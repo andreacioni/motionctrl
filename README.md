@@ -689,6 +689,21 @@ on_picture_save curl http://localhost:8888/internal/event/picture/saved?picturep
 
 **NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```).
 
+Now you can add *notify* section to your *motionctrl* configuration file.
+
+```json
+"notify" : {
+        "method" : "telegram",
+        "token" : "324565775:JHBFEIFEIBFedae-2neuifbEDEEGEFEAF",
+        "to": ["12345678", "87654321"],
+        "message": "Motion recognized",
+        "photo": 2
+    }
+```
+
+```photo``` parameter indicates how many photos are sent to, configured chat, after an event starts.
+
+
 # FAQ
 
  - How can I obtain valid cert/key to enable HTTPS support?
