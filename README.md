@@ -700,12 +700,12 @@ Now you can add *notify* section to your *motionctrl* configuration file.
     }
 ```
 
-```photo``` parameter indicates how many photos are sent to, configured chat, after an event starts.
+```photo``` parameter indicates how many photos are sent to configured chats after an event starts.
 
 # Application Path
 
 In *motionctrl* configuration file you could specify the ```appPath``` parameter to point to the directory that contains the frontend application files.
-Those files are accessible from: ```http://<IP>:<PORT>/app/
+Those files are accessible from: ```http://<IP>:<PORT>/app/```
 
 # FAQ
 
