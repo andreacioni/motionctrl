@@ -9,8 +9,9 @@ motionctlr allows you to:
 - provide only one point to access both stream and webcontrol
 - improve motion stream/webcontrol security with HTTPS
 - managing motion with JSON REST api that replace the old text webcontrol interface integrated in motion
-- backup old image/video in Google Drive* (archive & encryption support)
-- notify event through Telegram* to every device you want
+- backup old image/video in Google Drive* (archive & encryption support) (more [here](#backup))
+- notify event through Telegram* to every device you want (more [here](#notification))
+- host simple frontend application (more [here](#application-path))
 
 *: more backup and notify services could be implemented easily, take a look inside backup/ notify/ folders!
 
@@ -632,7 +633,8 @@ Here below some example showing, only, backup section of motionctrl config file:
         "method" : "google",
     }
 ```
-3. Automatic backup every day at 22:00 size is greater than 10 Mbyte
+
+3. Automatic backup every day at 22:00
 ```json
 "backup" :  {
         "when" : "0 22 * * *",
@@ -640,15 +642,7 @@ Here below some example showing, only, backup section of motionctrl config file:
     }
 ```
 
-4. Automatic backup every day at 22:00
-```json
-"backup" :  {
-        "when" : "0 22 * * *",
-        "method" : "google",
-    }
-```
-
-5. Automatic backup every day at 22:00, encrypt every single file before upload
+4. Automatic backup every day at 22:00, encrypt every single file before upload
 ```json
 "backup" :  {
         "when" : "0 22 * * *",
@@ -657,7 +651,7 @@ Here below some example showing, only, backup section of motionctrl config file:
     }
 ```
 
-6. Automatic backup every day at 22:00, create archives with max 10 files and encrypt them before upload
+5. Automatic backup every day at 22:00, create archives with max 10 files and encrypt them before upload
 ```json
 "backup" :  {
         "when" : "0 22 * * *",
@@ -708,6 +702,10 @@ Now you can add *notify* section to your *motionctrl* configuration file.
 
 ```photo``` parameter indicates how many photos are sent to, configured chat, after an event starts.
 
+# Application Path
+
+In *motionctrl* configuration file you could specify the ```appPath``` parameter to point to the directory that contains the frontend application files.
+Those files are accessible from: ```http://<IP>:<PORT>/app/
 
 # FAQ
 
