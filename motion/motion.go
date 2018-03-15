@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
-	"sync"
 
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/version"
@@ -13,14 +12,10 @@ import (
 )
 
 var (
-	sMutex sync.Mutex
-
 	motionConfigFile string
 )
 
 func Init(configFile string, autostart bool, detection bool) error {
-	sMutex.Lock()
-	defer sMutex.Unlock()
 
 	if err := checkInstall(); err != nil {
 		return fmt.Errorf("Motion not found: %v", err)

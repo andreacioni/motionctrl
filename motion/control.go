@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
@@ -18,6 +19,10 @@ import (
 
 const (
 	waitLiveRegex = "Motion"
+)
+
+var (
+	sMutex sync.Mutex
 )
 
 func Startup(motionDetectionStartup bool) error {
