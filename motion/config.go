@@ -89,6 +89,75 @@ var ReverseConfigTypeMapper = func(s string) interface{} {
 	}
 }
 
+func ConfigList() (map[string]interface{}, error) {
+	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
+		ret := utils.RegexSubmatchTypedMap(listConfigParserRegex, body, ConfigTypeMapper)
+
+		if len(ret) == 0 {
+			return nil, fmt.Errorf("empty configuration")
+		}
+		return ret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret.(map[string]interface{}), nil
+}
+
+func ConfigGetRO(param string) string {
+	return readOnlyConfig[param]
+}
+
+func ConfigGet(param string) (map[string]interface{}, error) {
+	queryURL := fmt.Sprintf("/config/get?query=%s", param)
+	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
+		ret := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
+
+		if len(ret) == 0 {
+			return nil, fmt.Errorf("invalid query (%s)", body)
+		}
+		return ret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret.(map[string]interface{}), nil
+
+}
+
+func ConfigCanSet(name string) bool {
+	b, _ := utils.InSlice(name, configReadOnlyParams)
+	return !b
+}
+
+func ConfigSet(name string, value string) error {
+	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
+	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(fmt.Sprintf(setConfigParserRegex, name, value), body) {
+			return nil, fmt.Errorf("there was an error on setting '%s' parameter", name)
+		}
+
+		return nil, nil
+	})
+
+	return err
+}
+
+func ConfigWrite() error {
+	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(configWriteRegex, body) {
+			return nil, fmt.Errorf("unable to write config (%s)", body)
+		}
+		return nil, nil
+	})
+
+	return err
+}
+
 func loadConfig(filename string) error {
 	glg.Infof("Loading motion configuration from %s...", filename)
 
@@ -187,73 +256,4 @@ func parseConfig(configFile string) (map[string]string, error) {
 	}
 
 	return result, nil
-}
-
-func ConfigList() (map[string]interface{}, error) {
-	ret, err := webControlGet("/config/list", func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchTypedMap(listConfigParserRegex, body, ConfigTypeMapper)
-
-		if len(ret) == 0 {
-			return nil, fmt.Errorf("empty configuration")
-		}
-		return ret, nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ret.(map[string]interface{}), nil
-}
-
-func ConfigGetRO(param string) string {
-	return readOnlyConfig[param]
-}
-
-func ConfigGet(param string) (map[string]interface{}, error) {
-	queryURL := fmt.Sprintf("/config/get?query=%s", param)
-	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
-
-		if len(ret) == 0 {
-			return nil, fmt.Errorf("invalid query (%s)", body)
-		}
-		return ret, nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ret.(map[string]interface{}), nil
-
-}
-
-func ConfigCanSet(name string) bool {
-	b, _ := utils.InSlice(name, configReadOnlyParams)
-	return !b
-}
-
-func ConfigSet(name string, value string) error {
-	queryURL := fmt.Sprintf("/config/set?%s=%s", name, value)
-	_, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		if !utils.RegexMustMatch(fmt.Sprintf(setConfigParserRegex, name, value), body) {
-			return nil, fmt.Errorf("there was an error on setting '%s' parameter", name)
-		}
-
-		return nil, nil
-	})
-
-	return err
-}
-
-func ConfigWrite() error {
-	_, err := webControlGet("/config/write", func(body string) (interface{}, error) {
-		if !utils.RegexMustMatch(configWriteRegex, body) {
-			return nil, fmt.Errorf("unable to write config (%s)", body)
-		}
-		return nil, nil
-	})
-
-	return err
 }

@@ -120,7 +120,7 @@ func PhotoSaved(filepath string) {
 	defer nMutex.Unlock()
 
 	if notifyService != nil {
-		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) {
+		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) { //TODO improve this
 			if err := notifyService.Notify("", filepath); err != nil {
 				glg.Errorf("Failed to send notify: %v", err)
 			} else {
