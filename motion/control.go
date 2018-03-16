@@ -197,7 +197,7 @@ func stopMotion() error {
 		return err
 	}
 
-	return nil
+	return waitDie()
 }
 
 func waitDie() error {
