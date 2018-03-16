@@ -17,14 +17,19 @@ func Snapshot() (string, error) {
 			return "", fmt.Errorf("unable to take snapshot (%s)", body)
 		}
 
-		switch snapExt[ConfigPictureType] {
-		case "ppm":
-			return filepath.Join(ConfigGetRO(ConfigTargetDir), "lastsnap.ppm"), nil
-		case "webp":
-			return filepath.Join(ConfigGetRO(ConfigTargetDir), "lastsnap.webp"), nil
-		default:
-			return filepath.Join(ConfigGetRO(ConfigTargetDir), "lastsnap.jpg"), nil
+		if targetDir, err := ConfigGet(ConfigTargetDir); err == nil {
+			switch snapExt[ConfigPictureType] {
+			case "ppm":
+				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.ppm"), nil
+			case "webp":
+				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.webp"), nil
+			default:
+				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.jpg"), nil
+			}
+		} else {
+			return nil, err
 		}
+
 	})
 
 	return snapFile.(string), err

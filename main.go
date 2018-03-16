@@ -46,7 +46,7 @@ func main() {
 	}
 
 	//Initialize backup  (if enabled)
-	if err := backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir)); err != nil {
+	if err := backup.Init(config.GetBackupConfig(), motion.ConfigGet(motion.ConfigTargetDir)); err != nil {
 		glg.Errorf("Error initializing backup package: %v", err)
 	}
 
