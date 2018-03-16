@@ -233,6 +233,7 @@ func takeSnapshot(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
+		glg.Debugf("Snapshot file: %s", snapFile)
 		c.File(snapFile)
 	}
 }

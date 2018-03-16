@@ -23,6 +23,7 @@ const (
 )
 
 const (
+	//Read only motion config
 	ConfigDaemon                   = "daemon"
 	ConfigSetupMode                = "setup_mode"
 	ConfigWebControlPort           = "webcontrol_port"
@@ -34,6 +35,8 @@ const (
 	ConfigWebControlAuthentication = "webcontrol_authentication"
 	ConfigProcessIdFile            = "process_id_file"
 	ConfigTargetDir                = "target_dir"
+
+	ConfigPictureType = "picture_type"
 )
 
 var (
