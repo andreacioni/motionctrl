@@ -17,7 +17,7 @@ motionctlr allows you to:
 
 __Download__
 
-Download instruction
+Download of precompiled version is available [here](https://github.com/andreacioni/motionctrl/releases)
 
 __Configuration__
 
