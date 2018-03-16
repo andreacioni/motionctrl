@@ -178,17 +178,26 @@ func startMotion(motionDetectionStartup bool) error {
 }
 
 func stopMotion() error {
-	pid, err := readPid()
-
-	if err == nil {
+	if pid, err := readPid(); err == nil {
 		glg.Debugf("Going to kill motion (PID: %d)", pid)
-		err = exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
-		if err == nil {
-			err = waitDie()
+		//err = exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
+		/*
+			from docs: On Unix systems, FindProcess always succeeds and returns
+			a Process for the given pid, regardless of whether the process exists.
+		*/
+		if proc, err := os.FindProcess(pid); err == nil {
+			if err := proc.Signal(syscall.SIGINT); err != nil {
+				return err
+			}
+		} else {
+			return err
 		}
+
+	} else {
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func waitDie() error {
