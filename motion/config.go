@@ -40,7 +40,8 @@ const (
 )
 
 var (
-	configReadOnlyParams = []string{ConfigDaemon,
+	configReadOnlyParams = []string{
+		ConfigDaemon,
 		ConfigSetupMode,
 		ConfigWebControlPort,
 		ConfigStreamPort,
@@ -256,7 +257,9 @@ func parseConfig(configFile string) (map[string]string, error) {
 		if !strings.HasPrefix(line, "#") && !strings.HasPrefix(line, ";") {
 			lines := strings.Split(line, " ")
 			if len(lines) >= 2 {
-				result[lines[0]] = strings.Join(lines[1:], "")
+				if b, _ := utils.InSlice(lines[0], configReadOnlyParams); b {
+					result[lines[0]] = strings.Join(lines[1:], "")
+				}
 			}
 		}
 

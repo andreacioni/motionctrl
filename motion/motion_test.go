@@ -23,12 +23,15 @@ func TestNotPresentParser(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	configMap, _ := parseConfig("motion_test.conf")
-	err := checkConfig(configMap)
+	configMap, err := parseConfig("motion_test.conf")
 
 	require.NoError(t, err)
 
-	require.Equal(t, 89, len(configMap), "Configuration parameters map must contain 89 elements")
+	err = checkConfig(configMap)
+
+	require.NoError(t, err)
+
+	require.Equal(t, len(configReadOnlyParams)-2, len(configMap), "Configuration parameters map must contain %d elements", len(configReadOnlyParams))
 }
 
 func TestCheckInstall(t *testing.T) {
