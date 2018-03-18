@@ -46,8 +46,12 @@ func main() {
 	}
 
 	//Initialize backup  (if enabled)
-	if err := backup.Init(config.GetBackupConfig(), motion.ConfigGetRO(motion.ConfigTargetDir)); err != nil {
-		glg.Errorf("Error initializing backup package: %v", err)
+	if targetDir, err := motion.ConfigGet(motion.ConfigTargetDir); err == nil && targetDir != nil {
+		if err := backup.Init(config.GetBackupConfig(), targetDir.(string)); err != nil {
+			glg.Errorf("Error initializing backup package: %v", err)
+		}
+	} else {
+		glg.Errorf("Unable to build backup service without valid 'target_dir' configured")
 	}
 
 	//Initialize notify  (if enabled)

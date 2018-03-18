@@ -23,6 +23,7 @@ const (
 )
 
 const (
+	//Read only motion config
 	ConfigDaemon                   = "daemon"
 	ConfigSetupMode                = "setup_mode"
 	ConfigWebControlPort           = "webcontrol_port"
@@ -34,6 +35,8 @@ const (
 	ConfigWebControlAuthentication = "webcontrol_authentication"
 	ConfigProcessIdFile            = "process_id_file"
 	ConfigTargetDir                = "target_dir"
+
+	ConfigPictureType = "picture_type"
 )
 
 var (
@@ -106,26 +109,30 @@ func ConfigList() (map[string]interface{}, error) {
 	return ret.(map[string]interface{}), nil
 }
 
-func ConfigGetRO(param string) string {
-	return readOnlyConfig[param]
-}
+func ConfigGet(param string) (interface{}, error) {
 
-func ConfigGet(param string) (map[string]interface{}, error) {
-	queryURL := fmt.Sprintf("/config/get?query=%s", param)
-	ret, err := webControlGet(queryURL, func(body string) (interface{}, error) {
-		ret := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
+	var ret interface{}
+	var err error
 
-		if len(ret) == 0 {
-			return nil, fmt.Errorf("invalid query (%s)", body)
+	if roConf := readOnlyConfig[param]; roConf != "" {
+		ret = ConfigTypeMapper(roConf)
+	} else {
+		queryURL := fmt.Sprintf("/config/get?query=%s", param)
+		ret, err = webControlGet(queryURL, func(body string) (interface{}, error) {
+			c := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
+
+			if len(c) != 1 {
+				return nil, fmt.Errorf("invalid query (%s)", body)
+			}
+			return c[param], nil
+		})
+
+		if err != nil {
+			return nil, err
 		}
-		return ret, nil
-	})
-
-	if err != nil {
-		return nil, err
 	}
 
-	return ret.(map[string]interface{}), nil
+	return ret, nil
 
 }
 

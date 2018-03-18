@@ -29,37 +29,37 @@ type MethodHandler struct {
 }
 
 var internalHandlersMap = map[string]MethodHandler{
-	"/event/start":           MethodHandler{method: http.MethodGet, f: eventStart},
-	"/event/end":             MethodHandler{method: http.MethodGet, f: eventEnd},
-	"/event/motion/detected": MethodHandler{method: http.MethodGet, f: motionDetected},
-	"/event/picture/saved":   MethodHandler{method: http.MethodGet, f: pictureSaved},
+	"/event/start":           {method: http.MethodGet, f: eventStart},
+	"/event/end":             {method: http.MethodGet, f: eventEnd},
+	"/event/motion/detected": {method: http.MethodGet, f: motionDetected},
+	"/event/picture/saved":   {method: http.MethodGet, f: pictureSaved},
 }
 
 var handlersMap = map[string]MethodHandler{
-	"/control/startup":  MethodHandler{method: http.MethodGet, f: startHandler},
-	"/control/shutdown": MethodHandler{method: http.MethodGet, f: stopHandler},
-	"/control/status":   MethodHandler{method: http.MethodGet, f: statusHandler},
-	"/control/restart":  MethodHandler{method: http.MethodGet, f: restartHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/control/startup":  {method: http.MethodGet, f: startHandler},
+	"/control/shutdown": {method: http.MethodGet, f: stopHandler},
+	"/control/status":   {method: http.MethodGet, f: statusHandler},
+	"/control/restart":  {method: http.MethodGet, f: restartHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/detection/status": MethodHandler{method: http.MethodGet, f: isMotionDetectionEnabled, m: []gin.HandlerFunc{needMotionUp}},
-	"/detection/start":  MethodHandler{method: http.MethodGet, f: startDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
-	"/detection/stop":   MethodHandler{method: http.MethodGet, f: stopDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/detection/status": {method: http.MethodGet, f: isMotionDetectionEnabled, m: []gin.HandlerFunc{needMotionUp}},
+	"/detection/start":  {method: http.MethodGet, f: startDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/detection/stop":   {method: http.MethodGet, f: stopDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/camera/stream":   MethodHandler{method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
-	"/camera/snapshot": MethodHandler{method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/stream":   {method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/snapshot": {method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/config/list":       MethodHandler{method: http.MethodGet, f: listConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
-	"/config/set":        MethodHandler{method: http.MethodGet, f: setConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
-	"/config/get/:param": MethodHandler{method: http.MethodGet, f: getConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
-	"/config/write":      MethodHandler{method: http.MethodGet, f: writeConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/list":       {method: http.MethodGet, f: listConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/set":        {method: http.MethodGet, f: setConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/get/:param": {method: http.MethodGet, f: getConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
+	"/config/write":      {method: http.MethodGet, f: writeConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/targetdir/list":             MethodHandler{method: http.MethodGet, f: listTargetDir},
-	"/targetdir/size":             MethodHandler{method: http.MethodGet, f: sizeTargetDir},
-	"/targetdir/get/:filename":    MethodHandler{method: http.MethodGet, f: retrieveFromTargetDir},
-	"/targetdir/remove/:filename": MethodHandler{method: http.MethodGet, f: removeFromTargetDir},
+	"/targetdir/list":             {method: http.MethodGet, f: listTargetDir},
+	"/targetdir/size":             {method: http.MethodGet, f: sizeTargetDir},
+	"/targetdir/get/:filename":    {method: http.MethodGet, f: retrieveFromTargetDir},
+	"/targetdir/remove/:filename": {method: http.MethodGet, f: removeFromTargetDir},
 
-	"/backup/status": MethodHandler{method: http.MethodGet, f: backupStatus},
-	"/backup/launch": MethodHandler{method: http.MethodGet, f: backupLaunch},
+	"/backup/status": {method: http.MethodGet, f: backupStatus},
+	"/backup/launch": {method: http.MethodGet, f: backupLaunch},
 }
 
 func Init(conf config.Configuration, shutdownHook func()) error {
@@ -233,6 +233,7 @@ func takeSnapshot(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
+		glg.Debugf("Snapshot file: %s", snapFile)
 		c.File(snapFile)
 	}
 }
@@ -258,7 +259,7 @@ func getConfigHandler(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()}) //TODO improve fail with returned status code from request sent to motion
 		} else {
-			c.JSON(http.StatusOK, config)
+			c.JSON(http.StatusOK, map[string]interface{}{query: config})
 		}
 	}
 }
