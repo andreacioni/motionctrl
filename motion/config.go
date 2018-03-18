@@ -109,7 +109,7 @@ func ConfigList() (map[string]interface{}, error) {
 	return ret.(map[string]interface{}), nil
 }
 
-func ConfigGet(param string) (map[string]interface{}, error) {
+func ConfigGet(param string) (interface{}, error) {
 
 	var ret interface{}
 	var err error
@@ -124,7 +124,7 @@ func ConfigGet(param string) (map[string]interface{}, error) {
 			if len(c) == 0 {
 				return nil, fmt.Errorf("invalid query (%s)", body)
 			}
-			return c, nil
+			return c[param], nil
 		})
 
 		if err != nil {
@@ -132,7 +132,7 @@ func ConfigGet(param string) (map[string]interface{}, error) {
 		}
 	}
 
-	return ret.(map[string]interface{}), nil
+	return ret.(interface{}), nil
 
 }
 

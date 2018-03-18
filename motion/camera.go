@@ -18,13 +18,13 @@ func Snapshot() (string, error) {
 		}
 
 		if targetDir, err := ConfigGet(ConfigTargetDir); err == nil {
-			switch snapExt[ConfigPictureType] {
+			switch snapExt {
 			case "ppm":
-				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.ppm"), nil
+				return filepath.Join(targetDir.(string), "lastsnap.ppm"), nil
 			case "webp":
-				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.webp"), nil
+				return filepath.Join(targetDir.(string), "lastsnap.webp"), nil
 			default:
-				return filepath.Join(targetDir[ConfigTargetDir].(string), "lastsnap.jpg"), nil
+				return filepath.Join(targetDir.(string), "lastsnap.jpg"), nil
 			}
 		} else {
 			return nil, err
