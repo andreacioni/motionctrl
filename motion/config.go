@@ -41,8 +41,6 @@ const (
 
 var (
 	configReadOnlyParams = []string{
-		ConfigDaemon,
-		ConfigSetupMode,
 		ConfigWebControlPort,
 		ConfigStreamPort,
 		ConfigStreamAuthMethod,
