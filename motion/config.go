@@ -115,13 +115,13 @@ func ConfigGet(param string) (interface{}, error) {
 	var err error
 
 	if roConf := readOnlyConfig[param]; roConf != "" {
-		ret = roConf
+		ret = ConfigTypeMapper(roConf)
 	} else {
 		queryURL := fmt.Sprintf("/config/get?query=%s", param)
 		ret, err = webControlGet(queryURL, func(body string) (interface{}, error) {
 			c := utils.RegexSubmatchTypedMap(getConfigParserRegex, body, ConfigTypeMapper)
 
-			if len(c) == 0 {
+			if len(c) != 1 {
 				return nil, fmt.Errorf("invalid query (%s)", body)
 			}
 			return c[param], nil
@@ -132,7 +132,7 @@ func ConfigGet(param string) (interface{}, error) {
 		}
 	}
 
-	return ret.(interface{}), nil
+	return ret, nil
 
 }
 
