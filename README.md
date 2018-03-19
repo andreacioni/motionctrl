@@ -21,7 +21,7 @@ Download of precompiled version is available [here](https://github.com/andreacio
 
 __Configuration__
 
-In order to execute motionctrl you need a valid JSON configuration file, an example of it could be:
+In order to execute *motionctrl* you need a valid JSON configuration file, an example of it could be:
 
 ```json
 {
@@ -56,6 +56,46 @@ In order to execute motionctrl you need a valid JSON configuration file, an exam
     }
 }
 ```
+
+To allow *motionctrl* to interact with motion correctly you MUST set some *motion* parameter (defined inside ```motionConfigFile```) to following values:
+|Name|Value|
+|----|-----|
+|webcontrol_port| TCP/IP port |
+|stream_port| TCP/IP port |
+|stream_auth_method| 0 |
+|stream_authentication| comment this |
+|webcontrol_html_output| off |
+|webcontrol_parms| 2 |
+|webcontrol_authentication| comment this |
+|process_id_file| pid file path |
+|target_dir| target directory file path |
+
+An example of a valid configuration should be:
+
+
+```
+target_dir /home/pi/motion/output
+
+process_id_file /home/pi/motion/run/motion.pid
+
+webcontrol_port 8080
+
+webcontrol_parms 2
+
+#webcontrol_authentication
+
+webcontrol_html_output off
+
+stream_port 8081
+
+stream_auth_method 0
+
+#stream_authentication
+
+[...]
+
+```
+
 
 __Launch__
 
