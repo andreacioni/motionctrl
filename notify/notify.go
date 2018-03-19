@@ -32,6 +32,7 @@ var (
 
 	nMutex        sync.Mutex
 	notifyService NotifyService
+	active        bool
 
 	photoLimitSemaphore *semaphore.Semaphore
 )
@@ -56,6 +57,9 @@ func Init(conf config.Notify) error {
 				err = fmt.Errorf("Cannot authenticate to '%s' service: %v", conf.Method, err)
 				notifyService = nil
 			} else {
+
+				active = true
+
 				if conf.Photo > 0 {
 					photoLimitSemaphore = semaphore.New(notifyConfiguration.Photo)
 					photoLimitSemaphore.DrainPermits()
@@ -82,12 +86,12 @@ func Shutdown() {
 		notifyService = nil
 	}
 
-	if photoLimitSemaphore != nil {
-		photoLimitSemaphore.DrainPermits()
-		photoLimitSemaphore = nil
-	}
+	drainPhotoSemaphore()
+	photoLimitSemaphore = nil
 
 	notifyConfiguration = config.Notify{}
+
+	active = false
 }
 
 func MotionDetectedStart() {
@@ -95,10 +99,13 @@ func MotionDetectedStart() {
 	defer nMutex.Unlock()
 
 	if notifyService != nil {
-		if photoLimitSemaphore != nil {
-			photoLimitSemaphore.ReleaseMany(notifyConfiguration.Photo)
+		if active {
+			resetPhotoSemaphore()
+			notifyService.Notify(notifyConfiguration.Message, "")
+		} else {
+			glg.Warn("Notify service deactivated")
 		}
-		notifyService.Notify(notifyConfiguration.Message, "")
+
 	} else {
 		glg.Warn("No notify service is available")
 	}
@@ -109,7 +116,11 @@ func MotionDetectedStop() {
 	defer nMutex.Unlock()
 
 	if notifyService != nil {
-		photoLimitSemaphore.DrainPermits()
+		if active {
+			drainPhotoSemaphore()
+		} else {
+			glg.Warn("Notify service deactivated")
+		}
 	} else {
 		glg.Warn("No notify service is available")
 	}
@@ -120,17 +131,68 @@ func PhotoSaved(filepath string) {
 	defer nMutex.Unlock()
 
 	if notifyService != nil {
-		if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) { //TODO improve this
-			if err := notifyService.Notify("", filepath); err != nil {
-				glg.Errorf("Failed to send notify: %v", err)
+		if active {
+			if photoLimitSemaphore != nil {
+				if photoLimitSemaphore.AcquireWithin(1, 10*time.Microsecond) { //TODO improve this
+					if err := notifyService.Notify("", filepath); err != nil {
+						glg.Errorf("Failed to send notify: %v", err)
+					} else {
+						glg.Debugf("Sent notify (image; %s)", filepath)
+					}
+				} else {
+					glg.Warnf("Photo limit reached, this one won't be sent")
+				}
 			} else {
-				glg.Debugf("Sent notify (image; %s)", filepath)
+				glg.Warn("Unable to send picture, 'photo' parameter not defined?")
 			}
+
 		} else {
-			glg.Warnf("Photo limit reached, this one won't be sent")
+			glg.Warn("Notify service deactivated")
 		}
+
 	} else {
 		glg.Warn("No notify service is available")
+	}
+}
+
+func IsReady() bool {
+	nMutex.Lock()
+	defer nMutex.Unlock()
+
+	return notifyService != nil
+}
+
+func IsActive() bool {
+	nMutex.Lock()
+	defer nMutex.Unlock()
+
+	return active
+}
+
+func SetActive(status bool) error {
+	nMutex.Lock()
+	defer nMutex.Unlock()
+
+	if notifyService == nil {
+		return fmt.Errorf("No notify service is currently configured")
+	}
+
+	glg.Debugf("Setting notify service active: %b", status)
+
+	active = status
+
+	return nil
+}
+
+func resetPhotoSemaphore() {
+	if photoLimitSemaphore != nil {
+		photoLimitSemaphore.ReleaseMany(notifyConfiguration.Photo)
+	}
+}
+
+func drainPhotoSemaphore() {
+	if photoLimitSemaphore != nil {
+		photoLimitSemaphore.DrainPermits()
 	}
 }
 

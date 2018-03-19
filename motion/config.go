@@ -24,8 +24,6 @@ const (
 
 const (
 	//Read only motion config
-	ConfigDaemon                   = "daemon"
-	ConfigSetupMode                = "setup_mode"
 	ConfigWebControlPort           = "webcontrol_port"
 	ConfigStreamPort               = "stream_port"
 	ConfigStreamAuthMethod         = "stream_auth_method"

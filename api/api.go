@@ -17,6 +17,7 @@ import (
 	"github.com/andreacioni/motionctrl/backup"
 	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/motion"
+	"github.com/andreacioni/motionctrl/notify"
 	"github.com/andreacioni/motionctrl/utils"
 	"github.com/andreacioni/motionctrl/version"
 )
@@ -60,6 +61,10 @@ var handlersMap = map[string]MethodHandler{
 
 	"/backup/status": {method: http.MethodGet, f: backupStatus},
 	"/backup/launch": {method: http.MethodGet, f: backupLaunch},
+
+	"/notify/status":     {method: http.MethodGet, f: notifyStatus},
+	"/notify/activate":   {method: http.MethodGet, f: notifyActivate},
+	"/notify/deactivate": {method: http.MethodGet, f: notifyDeactivate},
 }
 
 func Init(conf config.Configuration, shutdownHook func()) error {
@@ -361,4 +366,27 @@ func removeFromTargetDir(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "missing 'filename' parameter"})
 	}
 
+}
+
+func notifyStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"ready":  notify.IsReady(),
+		"active": notify.IsActive(),
+	})
+}
+
+func notifyActivate(c *gin.Context) {
+	if err := notify.SetActive(true); err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "notify service is ready and active now"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("unable to activate notify: %v", err)})
+	}
+}
+
+func notifyDeactivate(c *gin.Context) {
+	if err := notify.SetActive(false); err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "notify service deactivated"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("unable to activate notify: %v", err)})
+	}
 }
