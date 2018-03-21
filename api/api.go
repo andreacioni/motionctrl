@@ -206,13 +206,24 @@ func isMotionDetectionEnabled(c *gin.Context) {
 }
 
 func startDetectionHandler(c *gin.Context) {
-	err := motion.EnableMotionDetection()
+	n := c.Query("notify")
 
-	if err != nil {
+	if n != "" {
+		if b, err := strconv.ParseBool(n); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "'notify' must be true or false"})
+		} else {
+			if err := notify.SetActive(b); err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("failed to activate notification service: %v", err)})
+			}
+		}
+	}
+
+	if err := motion.EnableMotionDetection(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "motion detection started"})
 	}
+
 }
 
 func stopDetectionHandler(c *gin.Context) {
