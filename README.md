@@ -498,7 +498,7 @@ Open your browser and go to: http://localhost:8888/api/camera/stream
  ```
 $> curl http://10.8.0.1:8888/api/control/startup
 
-Open your browser and go to: http://localhost:8888/api/camera/shapshot
+Open your browser and go to: http://localhost:8888/api/camera/snapshot
  ```
 
 ### /targetdir/list
