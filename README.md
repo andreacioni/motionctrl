@@ -57,7 +57,7 @@ In order to execute *motionctrl* you need a valid JSON configuration file, an ex
 }
 ```
 
-To allow *motionctrl* to interact with motion correctly you MUST set some *motion* parameter (defined inside ```motionConfigFile```) to following values:
+To allow *motionctrl* and *motion* to interact each other and work properly is **imperative** to set some *motion* parameter (defined inside ```motionConfigFile```) to following values:
 
 Name | Value
 ---- | -----
@@ -70,6 +70,15 @@ webcontrol_parms | 2
 webcontrol_authentication | comment this 
 process_id_file | pid file path 
 target_dir | target directory file path 
+on_event_start | HTTP GET: http://localhost:8888/internal/event_start
+on_event_end | HTTP GET: http://localhost:8888/internal/event_end
+on_picture_save | HTTP GET: http://localhost:8888/internal/picture_save
+on_motion_detected | HTTP GET: http://localhost:8888/internal/motion_detected
+on_movie_start | HTTP GET: http://localhost:8888/internal/movie_start
+on_movie_end | HTTP GET: http://localhost:8888/internal/movie_end
+on_camera_lost | HTTP GET: http://localhost:8888/internal/camera_lost
+on_camera_found | HTTP GET: http://localhost:8888/internal/camera_found
+
 
 An example of a valid configuration should be:
 
@@ -93,9 +102,31 @@ stream_auth_method 0
 
 #stream_authentication
 
+on_event_start curl http://localhost:8888/internal/event_start
+
+on_event_end curl http://localhost:8888/internal/event_end
+
+on_picture_save curl http://localhost:8888/internal/event/picture_saved?picturepath=%f
+
+on_motion_detected curl http://localhost:8888/internal/motion_detected
+
+on_area_detected curl http://localhost:8888/internal/area_detected
+
+on_movie_start curl http://localhost:8888/internal/movie_start
+
+on_movie_end curl http://localhost:8888/internal/movie_end?moviepath=%f
+
+on_camera_lost curl http://localhost:8888/internal/camera_lost
+
+on_camera_found curl http://localhost:8888/internal/camera_found
+
 [...]
 
 ```
+
+**NOTE**
+1. curl is a command line utility usually preinstalled on every UNIX-like system. In case it isn't, you could install it (on Ubuntu: ```sudo apt-get install curl```). Is not mandatory to use curl to send events to *motionctrl* you could use whatever tool you prefer to contact the URL.
+1. curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```) and/or if you have configured motionctrl to run on different address.
 
 
 __Launch__
@@ -707,29 +738,7 @@ In order to correctly login to your account you must simply run *motionctrl* and
 
 # Notification
 
-Following steps are needed only if you want to enable notification service available in *motionctrl*
-
-- Install ```curl```
-- Open your motion configuration file (e.g. /etc/motion/motion.conf)
-- Set ```on_event_start``` and ```on_event_end``` ```on_picture_save``` to:
-
-```
-# Command to be executed when an event starts. (default: none)
-# An event starts at first motion detected after a period of no motion defined by event_gap
-on_event_start curl http://localhost:8888/internal/event/start
-
-# Command to be executed when an event ends after a period of no motion
-# (default: none). The period of no motion is defined by option event_gap.
-on_event_end curl http://localhost:8888/internal/event/end
-
-# Command to be executed when a picture (.ppm|.jpg) is saved (default: none)
-# To give the filename as an argument to a command append it with %f
-on_picture_save curl http://localhost:8888/internal/event/picture/saved?picturepath=%f
-```
-
-**NOTE**: curl command syntax could differ in case you have enabled HTTPS (replace ```http``` with ```https```).
-
-Now you can add *notify* section to your *motionctrl* configuration file.
+Add *notify* section to your *motionctrl* configuration file.
 
 ```json
 "notify" : {
@@ -741,7 +750,7 @@ Now you can add *notify* section to your *motionctrl* configuration file.
     }
 ```
 
-```photo``` parameter indicates how many photos are sent to configured chats after an event starts.
+```photo``` parameter indicates how many photos are sent to configured chats after an event starts. It is used to limit the number of pictures sent to every chat when an event start. The limit will reset when ```event_end``` is triggered.
 
 # Application Path
 
