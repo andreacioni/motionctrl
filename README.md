@@ -58,17 +58,18 @@ In order to execute *motionctrl* you need a valid JSON configuration file, an ex
 ```
 
 To allow *motionctrl* to interact with motion correctly you MUST set some *motion* parameter (defined inside ```motionConfigFile```) to following values:
-|Name|Value|
-|----|-----|
-|webcontrol_port| TCP/IP port |
-|stream_port| TCP/IP port |
-|stream_auth_method| 0 |
-|stream_authentication| comment this |
-|webcontrol_html_output| off |
-|webcontrol_parms| 2 |
-|webcontrol_authentication| comment this |
-|process_id_file| pid file path |
-|target_dir| target directory file path |
+
+Name | Value
+---- | -----
+webcontrol_port | TCP/IP port 
+stream_port | TCP/IP port 
+stream_auth_method | 0 
+stream_authentication | comment this 
+webcontrol_html_output| off 
+webcontrol_parms | 2 
+webcontrol_authentication | comment this 
+process_id_file | pid file path 
+target_dir | target directory file path 
 
 An example of a valid configuration should be:
 
@@ -498,7 +499,7 @@ Open your browser and go to: http://localhost:8888/api/camera/stream
  ```
 $> curl http://10.8.0.1:8888/api/control/startup
 
-Open your browser and go to: http://localhost:8888/api/camera/shapshot
+Open your browser and go to: http://localhost:8888/api/camera/snapshot
  ```
 
 ### /targetdir/list
