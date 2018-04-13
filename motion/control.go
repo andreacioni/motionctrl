@@ -180,7 +180,6 @@ func startMotion(motionDetectionStartup bool) error {
 func stopMotion() error {
 	if pid, err := readPid(); err == nil {
 		glg.Debugf("Going to kill motion (PID: %d)", pid)
-		//err = exec.Command("kill", "-2", fmt.Sprint(pid)).Run()
 		/*
 			from docs: On Unix systems, FindProcess always succeeds and returns
 			a Process for the given pid, regardless of whether the process exists.
