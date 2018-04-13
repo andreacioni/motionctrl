@@ -216,6 +216,14 @@ func waitDie() error {
 }
 
 func waitLive() error {
+	var err error
+	var pid int
+
+	if pid, err = readPid(); err != nil {
+		return err
+	}
+	glg.Debugf("motion started (PID: %d", pid)
+
 	req := gorequest.New()
 	i, secs := 0, 15
 	for resp, body, errs := req.Get(GetBaseURL()).End(); i < secs; resp, body, errs = req.Get(GetBaseURL()).End() {
