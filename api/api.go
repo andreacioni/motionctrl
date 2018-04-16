@@ -32,8 +32,13 @@ type MethodHandler struct {
 var internalHandlersMap = map[string]MethodHandler{
 	"/event/start":           {method: http.MethodGet, f: eventStart},
 	"/event/end":             {method: http.MethodGet, f: eventEnd},
-	"/event/motion/detected": {method: http.MethodGet, f: motionDetected},
-	"/event/picture/saved":   {method: http.MethodGet, f: pictureSaved},
+	"/event/motion_detected": {method: http.MethodGet, f: motionDetected},
+	"/event/picture_saved":   {method: http.MethodGet, f: pictureSaved},
+	"/event/area_detected":   {method: http.MethodGet, f: areaDetected},
+	"/event/movie_start":     {method: http.MethodGet, f: movieStart},
+	"/event/movie_end":       {method: http.MethodGet, f: movieEnd},
+	"/event/camera_lost":     {method: http.MethodGet, f: cameraLost},
+	"/event/camera_found":    {method: http.MethodGet, f: cameraFound},
 }
 
 var handlersMap = map[string]MethodHandler{
@@ -48,6 +53,7 @@ var handlersMap = map[string]MethodHandler{
 
 	"/camera/stream":   {method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
 	"/camera/snapshot": {method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/capture":  {method: http.MethodGet, f: captureFrame, m: []gin.HandlerFunc{needMotionUp}},
 
 	"/config/list":       {method: http.MethodGet, f: listConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
 	"/config/set":        {method: http.MethodGet, f: setConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
@@ -251,6 +257,17 @@ func takeSnapshot(c *gin.Context) {
 	} else {
 		glg.Debugf("Snapshot file: %s", snapFile)
 		c.File(snapFile)
+	}
+}
+
+func captureFrame(c *gin.Context) {
+	captureFile, err := motion.Snapshot()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	} else {
+		glg.Debugf("Capture file: %s", captureFile)
+		c.File(captureFile)
 	}
 }
 

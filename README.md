@@ -508,15 +508,43 @@ $> curl http://10.8.0.1:8888/api/control/startup
 Open your browser and go to: http://localhost:8888/api/camera/stream
  ```
 
-### /camera/snapshot
+ ### /camera/capture
 
-- **Description**: capture and retrieve snapshot from camera
+- **Description**: capture a single frame from the stream and retrieve it
 - **Method**: ``` GET ```
 - **Parameters**: N.D.
 - **Return**:
   - *Status Code + Body*:
     - 200: snapshot
     - Response type: image
+    - 409: motion not started yet
+    - Response type: JSON
+    ```
+    {"message": <STRING>}
+    ```
+    - 500: generic internal server error
+    ```
+    {"message": <STRING>}
+    ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/startup
+
+Open your browser and go to: http://localhost:8888/api/camera/capture
+ ```
+
+### /camera/snapshot
+
+- **Description**: save a snapshot inside ```target_dir```
+- **Method**: ``` GET ```
+- **Parameters**: N.D.
+- **Return**:
+  - *Status Code + Body*:
+    - 200: snapshot
+    - Response type: JSON
+    ```
+    {"message": <STRING>}
+    ```
     - 409: motion not started yet
     - Response type: JSON
     ```

@@ -2,35 +2,50 @@ package motion
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"github.com/andreacioni/motionctrl/utils"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
 )
 
-func Snapshot() (string, error) {
-
-	snapExt, err := ConfigGet(ConfigPictureType)
-
-	//TODO snapshot file not ready when function return. This cause some 404
-	snapFile, err := webControlGet("/action/snapshot", func(body string) (interface{}, error) {
+func Snapshot() error {
+	_, err := webControlGet("/action/snapshot", func(body string) (interface{}, error) {
 		if !utils.RegexMustMatch(SnapshotDetectionRegex, body) {
 			return "", fmt.Errorf("unable to take snapshot (%s)", body)
 		}
 
-		if targetDir, err := ConfigGet(ConfigTargetDir); err == nil {
-			switch snapExt {
-			case "ppm":
-				return filepath.Join(targetDir.(string), "lastsnap.ppm"), nil
-			case "webp":
-				return filepath.Join(targetDir.(string), "lastsnap.webp"), nil
-			default:
-				return filepath.Join(targetDir.(string), "lastsnap.jpg"), nil
-			}
-		} else {
-			return nil, err
-		}
-
+		return "", nil
 	})
 
-	return snapFile.(string), err
+	return err
+}
+
+func Capture() (string, error) {
+	resp, err := http.Get(GetStreamBaseURL())
+	boundary := "BoundaryString"
+
+	if err != nil {
+		return "", err
+	}
+
+	mr := multipart.NewReader(resp.Body, boundary)
+	p, err := mr.NextPart()
+	if err != nil {
+		return "", err
+	}
+
+	stream, err := ioutil.ReadAll(p)
+	if err != nil {
+		return "", err
+	}
+
+	tempFile := filepath.Join(os.TempDir(), "capture.jpg")
+
+	if err := ioutil.WriteFile(tempFile, stream, 0600); err != nil {
+		return "", err
+	}
+
+	return tempFile, nil
 }

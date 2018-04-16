@@ -17,6 +17,26 @@ func motionDetected(c *gin.Context) { //TODO not sure this is useful by now
 	glg.Debugf("Motion detected")
 }
 
+func areaDetected(c *gin.Context) {
+	glg.Debugf("Area detected")
+}
+
+func movieStart(c *gin.Context) {
+	glg.Debugf("Movie start")
+}
+
+func movieEnd(c *gin.Context) {
+	glg.Debugf("Movie end")
+}
+
+func cameraLost(c *gin.Context) {
+	glg.Debugf("Camera lost")
+}
+
+func cameraFound(c *gin.Context) {
+	glg.Debugf("Camera found")
+}
+
 func pictureSaved(c *gin.Context) {
 	picturePath := c.Query("picturepath")
 
