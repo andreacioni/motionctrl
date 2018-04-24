@@ -163,6 +163,7 @@ All the following APIs are accessible from ```/api```
   - [/write](#configwrite)
 - [/camera](#camerastream)
   - [/stream](#camerastream)
+  - [/capture](#cameracapture)
   - [/snapshot](#camerasnapshot)
 - [/targetdir](#targetdirlist)
   - [/list](#targetdirlist)
