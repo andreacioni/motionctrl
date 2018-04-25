@@ -34,3 +34,14 @@ func Snapshot() (string, error) {
 
 	return snapFile.(string), err
 }
+
+func MakeMovie() error {
+	_, err := webControlGet("/action/makemovie", func(body string) (interface{}, error) {
+		if !utils.RegexMustMatch(makeMovieRegex, body) {
+			return nil, fmt.Errorf("unable to start recording a movie (%s)", body)
+		}
+		return nil, nil
+	})
+
+	return err
+}
