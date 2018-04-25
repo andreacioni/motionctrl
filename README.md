@@ -133,6 +133,7 @@ All the following APIs are accessible from ```/api```
 - [/camera](#camerastream)
   - [/stream](#camerastream)
   - [/snapshot](#camerasnapshot)
+  - [/makemovie](#makemovie)
 - [/targetdir](#targetdirlist)
   - [/list](#targetdirlist)
   - [/size](#targetdirsize)
@@ -500,6 +501,32 @@ Open your browser and go to: http://localhost:8888/api/camera/stream
 $> curl http://10.8.0.1:8888/api/control/startup
 
 Open your browser and go to: http://localhost:8888/api/camera/snapshot
+ ```
+ 
+ ### /camera/makemovie
+
+- **Description**: make a movie and save it inside *target_dir*
+- **Method**: ``` GET ```
+- **Parameters**: N.D.
+- **Return**:
+  - *Status Code + Body*:
+    - 200: making a movie
+    - Response type: JSON
+    ```
+    {"message": <STRING>}
+    ```
+    - 409: motion not started yet
+    - Response type: JSON
+    ```
+    {"message": <STRING>}
+    ```
+    - 500: generic internal server error
+    ```
+    {"message": <STRING>}
+    ```
+- Example:
+ ```
+$> curl http://10.8.0.1:8888/api/control/startup; curl  http://localhost:8888/api/camera/makemovie
  ```
 
 ### /targetdir/list
