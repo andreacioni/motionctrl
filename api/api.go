@@ -51,9 +51,10 @@ var handlersMap = map[string]MethodHandler{
 	"/detection/start":  {method: http.MethodGet, f: startDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
 	"/detection/stop":   {method: http.MethodGet, f: stopDetectionHandler, m: []gin.HandlerFunc{needMotionUp}},
 
-	"/camera/stream":   {method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
-	"/camera/snapshot": {method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
-	"/camera/capture":  {method: http.MethodGet, f: captureFrame, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/stream":    {method: http.MethodGet, f: proxyStream, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/snapshot":  {method: http.MethodGet, f: takeSnapshot, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/capture":   {method: http.MethodGet, f: captureFrame, m: []gin.HandlerFunc{needMotionUp}},
+	"/camera/makemovie": {method: http.MethodGet, f: makeMovie, m: []gin.HandlerFunc{needMotionUp}},
 
 	"/config/list":       {method: http.MethodGet, f: listConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
 	"/config/set":        {method: http.MethodGet, f: setConfigHandler, m: []gin.HandlerFunc{needMotionUp}},
@@ -250,24 +251,33 @@ func proxyStream(c *gin.Context) {
 }
 
 func takeSnapshot(c *gin.Context) {
-	snapFile, err := motion.Snapshot()
+	err := motion.Snapshot()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
-		glg.Debugf("Snapshot file: %s", snapFile)
-		c.File(snapFile)
+		c.JSON(http.StatusOK, gin.H{"message": "snapshot file captured"})
 	}
 }
 
 func captureFrame(c *gin.Context) {
-	captureFile, err := motion.Snapshot()
+	captureFile, err := motion.Capture()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 	} else {
 		glg.Debugf("Capture file: %s", captureFile)
 		c.File(captureFile)
+	}
+}
+
+func makeMovie(c *gin.Context) {
+	err := motion.MakeMovie()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "movie recording started"})
 	}
 }
 

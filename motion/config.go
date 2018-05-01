@@ -20,6 +20,7 @@ const (
 	listConfigParserRegex    = "(?m)^(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)$"
 	getConfigParserRegex     = "(" + KeyValueRegex + "+) = (" + KeyValueRegex + "+)\nDone"
 	setConfigParserRegex     = "%s = %s\nDone"
+	makeMovieRegex           = "makemovie for thread [0-9]+\nDone\n"
 )
 
 const (
