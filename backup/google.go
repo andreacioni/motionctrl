@@ -14,6 +14,7 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 
+	"github.com/andreacioni/motionctrl/config"
 	"github.com/andreacioni/motionctrl/version"
 )
 
@@ -21,7 +22,7 @@ type GoogleDriveBackupService struct {
 	service *drive.Service
 }
 
-func (b *GoogleDriveBackupService) Authenticate() error {
+func (b *GoogleDriveBackupService) Setup(backConf config.Backup) error {
 	ctx := context.Background()
 
 	config := b.getConfig()

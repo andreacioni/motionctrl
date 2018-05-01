@@ -37,6 +37,9 @@ type Backup struct {
 	EncryptionKey  string `json:"encryptionKey"`
 	Archive        bool   `json:"archive"`
 	FilePerArchive int    `json:"filePerArchive"`
+
+	//Execute
+	Command string `json:"command"`
 }
 
 type Notify struct {

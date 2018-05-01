@@ -22,7 +22,7 @@ import (
 )
 
 type UploadService interface {
-	Authenticate() error
+	Setup(config.Backup) error
 	Upload(string) error
 }
 
@@ -85,7 +85,7 @@ func Init(conf config.Backup, targetDir string) error {
 				return fmt.Errorf("Unable to istantiate backup service: %v", err)
 			}
 
-			if err = uploadService.Authenticate(); err != nil {
+			if err = uploadService.Setup(conf); err != nil {
 				uploadService = nil
 				stopScheduler()
 				return fmt.Errorf("Failed to authenticate on upload service: %s", err.Error())
