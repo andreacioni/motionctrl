@@ -1,8 +1,6 @@
 package notify
 
 import (
-	"fmt"
-
 	"github.com/kpango/glg"
 
 	"gopkg.in/telegram-bot-api.v4"
@@ -19,18 +17,25 @@ func (n *TelegramNotifyService) Authenticate() error {
 	b, err := tgbotapi.NewBotAPI(n.apiToken)
 
 	if err != nil {
-		return fmt.Errorf("Failed to create new instance of bot API: %v", err)
+		glg.Warnf("Failed to create new instance of bot API: %v", err)
+	} else {
+		glg.Debugf("Authorized on account %s", b.Self.UserName)
+
+		n.bot = b
 	}
-
-	glg.Debugf("Authorized on account %s", b.Self.UserName)
-
-	n.bot = b
 
 	return nil
 }
 
 func (n *TelegramNotifyService) Notify(message, filename string) error {
 	var err error
+
+	if n.bot == nil {
+		if err = n.Authenticate(); err != nil {
+			return glg.Errorf("Can't authenticate to telegram bot API...")
+		}
+	}
+
 	for _, chatID := range n.chatIds {
 
 		if message != "" {
