@@ -216,9 +216,9 @@ func waitDie() error {
 }
 
 func waitLive() error {
-	req := gorequest.New()
+	req := gorequest.New().Get(GetBaseURL()).RedirectPolicy(func(req Request, via []*Request) error {})
 	i, secs := 0, 15
-	for resp, body, errs := req.Get(GetBaseURL()).End(); i < secs; resp, body, errs = req.Get(GetBaseURL()).End() {
+	for resp, body, errs := req.End(); i < secs; resp, body, errs = req.End() {
 		if errs == nil && resp.StatusCode == http.StatusOK && utils.RegexMustMatch(waitLiveRegex, body) {
 			break
 		}
