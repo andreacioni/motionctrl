@@ -157,7 +157,7 @@ func stopScheduler() {
 func setupCronSheduler(conf config.Backup) error {
 	cronSheduler = cron.New()
 
-	err := cronSheduler.AddFunc(conf.When, backupWorker)
+	_, err := cronSheduler.AddFunc(conf.When, backupWorker)
 
 	if err == nil {
 		glg.Infof("Cron job is started, running on: %s", conf.When)
@@ -180,7 +180,7 @@ func setupDirectoryWatcher(conf config.Backup, outDirectory string) error {
 
 			cronSheduler = cron.New()
 
-			if err = cronSheduler.AddFunc("@every 1m", checkSize); err == nil {
+			if _, err = cronSheduler.AddFunc("@every 1m", checkSize); err == nil {
 				glg.Info("Running directory size watcher every 1 minute")
 				cronSheduler.Start()
 			} else {
