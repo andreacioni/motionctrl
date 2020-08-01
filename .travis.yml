@@ -7,10 +7,7 @@ go:
 
 before_install:
   - curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-  - sudo apt-get install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev
-  - sudo apt-get install libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev
-  - sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
-  - sudo apt-get install libwebp-dev
+  - sudo apt-get install autoconf automake autopoint build-essential pkgconf libtool libzip-dev libjpeg-dev git libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev libwebp-dev gettext libmicrohttpd-dev
   - git clone https://github.com/Motion-Project/motion.git motion-release
   - cd motion-release
   - git checkout $(git ls-remote --tags https://github.com/Motion-Project/motion.git | awk '{print $2}' | grep -v '{}' | awk -F"/" '{print $3}' | tail -n 1)
