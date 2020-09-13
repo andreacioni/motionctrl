@@ -17,7 +17,7 @@ before_install:
   - sudo make install
   - cd ..
   - rm -rf motion-release
-  - motion --help
+  - motion -h
 
 go_import_path: github.com/andreacioni/motionctrl
 
