@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install autoconf automake autopoint build-essential pkgconf libtool libzip-dev libjpeg-dev git libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev libwebp-dev gettext libmicrohttpd-dev
   - git clone https://github.com/Motion-Project/motion.git motion-release
   - cd motion-release
-  - git checkout $(git ls-remote --tags https://github.com/Motion-Project/motion.git | awk '{print $2}' | grep -v '{}' | awk -F"/" '{print $3}' | tail -n 1)
+  - git checkout release-4.3.1
   - autoreconf -fiv
   - ./configure
   - make
