@@ -356,7 +356,7 @@ func retrieveFromTargetDir(c *gin.Context) {
 		if filePath, err := motion.TargetDirGetFile(fileName); err == nil {
 			c.File(filePath)
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to get: %s in target dir: ", fileName, err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Unable to get: %s in target dir: %v", fileName, err)})
 		}
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "missing 'filename' parameter"})
