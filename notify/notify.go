@@ -177,7 +177,7 @@ func SetActive(status bool) error {
 		return fmt.Errorf("No notify service is currently configured")
 	}
 
-	glg.Debugf("Setting notify service active: %b", status)
+	glg.Debugf("Setting notify service active: %t", status)
 
 	active = status
 
