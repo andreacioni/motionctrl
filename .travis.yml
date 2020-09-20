@@ -17,8 +17,8 @@ before_install:
   - sudo make install
   - cd ..
   - rm -rf motion-release
-  # - motion -h
-  - motion -c motion/motion_test.conf
+  - motion -h
+  #- motion -c motion/motion_test.conf
 
 go_import_path: github.com/andreacioni/motionctrl
 
